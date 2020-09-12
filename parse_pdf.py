@@ -9,16 +9,18 @@ from unidecode import unidecode
 
 date_regex = re.compile(r'[A-Z]{4,6},\s+\d{1,2}\s+[A-Z]{3,10}\s+\d{4}')
 footer_regex = re.compile(r'Liturgi \w+\s+\d{1,2}\s+\w+\s+20\d\d')
-heading_1_regex = re.compile(r'[IVX]{1,5}\.\s+[A-Z ]{5,30}')
+heading_1_regex = re.compile(r'[IVX0-9]{1,5}\.\s+[A-Z ]{5,30}')
 heading_2_regex = re.compile(r'[A-Z., ]{5,30}')
 heading_3_regex = re.compile(r'[A-Z.," ]{5,50}')
-song_indicator_regex = re.compile(r'NYANYIAN\s+(?:(?:UMAT)|[A-Z]+)')
+song_indicator_regex = re.compile(r'(?:\d{1,2}\.\s+)?NYANYIAN\s+(?:(?:UMAT)|[A-Z]+)')
 song_inst_regex = re.compile(r'(?:\w{2,3}\s+=\s+\w{1,2})|(?:\d{1,3}\s+ketuk)')
 cong_inst_regex = re.compile(r'(?:\(duduk\))|(?:\(berdiri\))')
 cong_inst_addt_regex = re.compile(r'\([a-zA-Z,.\- ]{3,200}\)')
 conv_start_regex = re.compile(r'^[0-9a-zA-Z., ]{1,10}: ')
 cut_conv_start_name_regex = re.compile(r'^[A-Z][0-9a-zA-Z., ]{1,10}')
 cut_conv_start_colon_regex = re.compile(r'^: ')
+repeated_char_all_detect_regex = re.compile(r'(?:(.)\1{1}){3,}')
+repeated_char_replace_regex = re.compile(r'((.)\2{1})')
 META = {
     'DATE': 'date',
     'TITLE': 'title',
@@ -49,7 +51,10 @@ def preprocess(text):
     return re.sub(replacement_regex, r' ', unidecode(text.strip()))
 
 
-def _window_sentence(sentence, max_char_per_line=MAX_CHAR_PER_LINE):
+def _window_sentence(sentence, max_char_per_line=MAX_CHAR_PER_LINE, with_meta : bool = False):
+    if with_meta:
+        return sentence
+
     punctuations = '.,!?'
     char_count = 0
     result = ''
@@ -70,13 +75,13 @@ def print_format(data: list, max_char_per_line: bool, with_meta:bool=False, prin
         prev = data[i-1]
         prev_2 = data[i-2]
         formatted = datum["text"] + (f'\t\t<===>\t\t{",".join(datum["meta"])}' if with_meta else '')
-        # print(formatted)
+        # print(formatted, file=print_target)
         if META['TITLE'] in datum['meta'] or META['CONG_INST_ADDT'] in datum['meta']:
             buffer_out.append(formatted)
         elif META['SONG'] in datum['meta']:
             if META['HEAD3'] in datum['meta']:
                 buffer_out.append('\nIntro\n' + formatted)
-            elif META['HEAD2'] in datum['meta']:
+            elif META['HEAD1'] in datum['meta'] or META['HEAD2'] in datum['meta']:
                 buffer_out.append('\n' + formatted)
             elif META['BODY'] in datum['meta']:
                 buffer_out.append(formatted)
@@ -112,7 +117,7 @@ def print_format(data: list, max_char_per_line: bool, with_meta:bool=False, prin
                 buffer_out.append('\n' + formatted)
 
     for buffer in buffer_out:
-        print(_window_sentence(buffer, max_char_per_line), file=print_target)
+        print(_window_sentence(buffer, max_char_per_line, with_meta), file=print_target)
 
 
 def parse_converted_pdf(input_path, output_path):
@@ -148,6 +153,10 @@ def parse_converted_pdf(input_path, output_path):
                 line['meta'].append(META['HEAD3'])
             else:
                 line['meta'].append(META['BODY'])
+
+            # ========== TITLE REPETITION CORRECTION ==========
+            if META['TITLE'] in line['meta'] and re.match(repeated_char_all_detect_regex, text):
+                line['text'] = re.sub(repeated_char_replace_regex, r'\2', text)
 
             # ========== CONGREGATION INSTRUCTION ==========
             if re.fullmatch(cong_inst_regex, text):
@@ -186,7 +195,6 @@ def parse_converted_pdf(input_path, output_path):
 def convert_pdf_to_txt(input_path, output_path):
     input_path = os.path.normpath(input_path)
     output_path = os.path.normpath(output_path)
-    #print(f'python pdf2txt.py -o {output_path} "{input_path}"')
     exit_code = os.system(f'python pdf2txt.py -o "{output_path}" "{input_path}"')
     if exit_code != 0:
         raise PdfMinerException(f'PdfMiner exit_code is {exit_code}! Exiting..')
@@ -199,6 +207,8 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--debug', action='store_true')
     parser.add_argument('-m', '--max_char_per_line', type=int, default=MAX_CHAR_PER_LINE)
     args = parser.parse_args()
+
+    print('Debug mode is active, No word windowing will be applied.')
 
     os.makedirs('input/', exist_ok=True)
     os.makedirs('output/', exist_ok=True)
