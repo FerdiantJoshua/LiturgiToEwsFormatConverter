@@ -1,5 +1,5 @@
-#!d:\python\python37\python.exe
 import sys
+import os
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfparser import PDFParser
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
@@ -101,6 +101,7 @@ def main(argv):
     else:
         return usage()
     for fname in args:
+        fname = os.path.normpath(fname)
         with open(fname, 'rb') as fp:
             interpreter = PDFPageInterpreter(rsrcmgr, device)
             for page in PDFPage.get_pages(fp, pagenos,

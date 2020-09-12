@@ -116,7 +116,7 @@ def print_format(data: list, max_char_per_line: bool, with_meta:bool=False, prin
 
 
 def parse_converted_pdf(input_path, output_path):
-    with open(input_path, 'r') as f_in:
+    with open(input_path, 'r', encoding='utf-8') as f_in:
         lines = f_in.readlines()
 
     is_first_heading_1_found = False
@@ -183,7 +183,10 @@ def parse_converted_pdf(input_path, output_path):
 
 
 def convert_pdf_to_txt(input_path, output_path):
-    exit_code = os.system(f'python pdf2txt.py "{input_path}" > {output_path}')
+    input_path = os.path.normpath(input_path)
+    output_path = os.path.normpath(output_path)
+    #print(f'python pdf2txt.py -o {output_path} "{input_path}"')
+    exit_code = os.system(f'python pdf2txt.py -o "{output_path}" "{input_path}"')
     if exit_code != 0:
         raise PdfMinerException(f'PdfMiner exit_code is {exit_code}! Exiting..')
 
