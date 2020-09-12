@@ -119,6 +119,7 @@ def parse_converted_pdf(input_path, output_path):
     with open(input_path, 'r', encoding='utf-8') as f_in:
         lines = f_in.readlines()
 
+    data = []
     is_first_heading_1_found = False
     is_finding_song_info = False
     is_reading_song = False
@@ -203,9 +204,6 @@ if __name__ == '__main__':
     os.makedirs('output/', exist_ok=True)
     os.makedirs(TEMP_DIR, exist_ok=True)
 
-    data = []
-    songs = []
-    headings = []
     path, _, files = next(os.walk(args.input_dir))
     print(f'Found {len(files)} files inside {args.input_dir}')
     for file in files:
