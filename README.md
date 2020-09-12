@@ -16,4 +16,8 @@ By Ferdiant Joshua M.
     ```shell script
     python parse_pdf.py
     ```
+   or
+    ```shell script
+    run_convert.bat
+    ```
 3. Resulting files will be inside `output/`
