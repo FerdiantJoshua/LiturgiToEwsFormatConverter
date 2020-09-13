@@ -1,22 +1,24 @@
 import argparse
-import json
+import logging
 import os
 import re
 import sys
 
 from unidecode import unidecode
 
+from logger import Logger
+
 
 date_regex = re.compile(r'[A-Z]{4,6},\s+\d{1,2}\s+[A-Z]{3,10}\s+\d{4}')
 footer_regex = re.compile(r'Liturgi \w+\s+\d{1,2}\s+\w+\s+20\d\d')
 heading_1_regex = re.compile(r'[IVX0-9]{1,5}\.\s+[A-Z ]{5,30}')
 heading_2_regex = re.compile(r'[A-Z., ]{5,30}')
-heading_3_regex = re.compile(r'[A-Z.," ]{5,50}')
+heading_3_regex = re.compile(r'[A-Z.,\'"\- ]{5,50}')
 song_indicator_regex = re.compile(r'(?:\d{1,2}\.\s+)?NYANYIAN\s+(?:(?:UMAT)|[A-Z]+)')
 song_inst_regex = re.compile(r'(?:\w{2,3}\s+=\s+\w{1,2})|(?:\d{1,3}\s+ketuk)')
 cong_inst_regex = re.compile(r'(?:\(duduk\))|(?:\(berdiri\))')
 cong_inst_addt_regex = re.compile(r'\([a-zA-Z,.\- ]{3,200}\)')
-conv_start_regex = re.compile(r'^[0-9a-zA-Z., ]{1,10}: ')
+conv_start_regex = re.compile(r'^[A-Z][0-9a-zA-Z., ]{1,10}: ')
 cut_conv_start_name_regex = re.compile(r'^[A-Z][0-9a-zA-Z., ]{1,10}')
 cut_conv_start_colon_regex = re.compile(r'^: ')
 repeated_char_all_detect_regex = re.compile(r'(?:(.)\1{1}){3,}')
@@ -42,6 +44,8 @@ MAX_CHAR_PER_LINE = 70
 END_LINE_TOLERANCE = 5
 
 
+logger = Logger().get_logger()
+
 class PdfMinerException(Exception):
     pass
 
@@ -51,31 +55,31 @@ def preprocess(text):
     return re.sub(replacement_regex, r' ', unidecode(text.strip()))
 
 
-def _window_sentence(sentence, max_char_per_line=MAX_CHAR_PER_LINE, with_meta : bool = False):
-    if with_meta:
-        return sentence
-
-    punctuations = '.,!?'
+def _window_sentence(sentence, max_char_per_line=MAX_CHAR_PER_LINE):
+    punctuations = '.,!?;'
     char_count = 0
     result = ''
-    for i in range(len(sentence)):
+    i = 0
+    while i < len(sentence):
         char_count += 1
         char = sentence[i]
         result += char
         if char in punctuations and char_count >= max_char_per_line and i < len(sentence) - END_LINE_TOLERANCE:
             result += '\n'
             char_count = 0
+            i += 1 if sentence[i+1] == ' ' else 0
+        i += 1
     return result
 
 
-def print_format(data: list, max_char_per_line: bool, with_meta:bool=False, print_target=sys.stdout) -> None:
+def print_format(data: list, max_char_per_line: bool, with_meta : bool = False, std_out=sys.stdout) -> None:
     buffer_out = []
     for i in range(len(data)):
         datum = data[i]
         prev = data[i-1]
         prev_2 = data[i-2]
-        formatted = datum["text"] + (f'\t\t<===>\t\t{",".join(datum["meta"])}' if with_meta else '')
-        # print(formatted, file=print_target)
+        formatted = datum["text"]
+        logger.debug(formatted  + (f'\t\t<===>\t\t{",".join(datum["meta"])}' if with_meta else ''))
         if META['TITLE'] in datum['meta'] or META['CONG_INST_ADDT'] in datum['meta']:
             buffer_out.append(formatted)
         elif META['SONG'] in datum['meta']:
@@ -88,9 +92,10 @@ def print_format(data: list, max_char_per_line: bool, with_meta:bool=False, prin
         elif META['HEAD1'] in datum['meta'] or META['HEAD2'] in datum['meta'] or META['HEAD3'] in datum['meta']:
             buffer_out.append('\n' + formatted)
         elif META['CONG_INST'] in datum['meta']:
+            # SWAP INSTRUCTION WITH HEADING
             if META['HEAD1'] not in prev['meta'] and META['HEAD2'] not in prev['meta'] and META['HEAD3'] not in prev['meta']:
                 data[i], data[i-1] = data[i-1], data[i]
-                # print(f'swapped: {datum}, {prev}')
+                logger.debug(f'swapped: {datum}, {prev}')
                 buffer_out.insert(len(buffer_out) - 1, formatted)
             else:
                 buffer_out.append(formatted)
@@ -117,7 +122,7 @@ def print_format(data: list, max_char_per_line: bool, with_meta:bool=False, prin
                 buffer_out.append('\n' + formatted)
 
     for buffer in buffer_out:
-        print(_window_sentence(buffer, max_char_per_line, with_meta), file=print_target)
+        std_out.write(_window_sentence(buffer, max_char_per_line) + '\n')
 
 
 def parse_converted_pdf(input_path, output_path):
@@ -131,7 +136,7 @@ def parse_converted_pdf(input_path, output_path):
     for line_ in lines:
         text = preprocess(line_)
         line = {'text': text, 'meta': []}
-        if text != '' and not re.match(footer_regex, text):
+        if (text != '') and not re.match(footer_regex, text):
             line['text'] = text
 
             # ========== DATE ==========
@@ -157,6 +162,7 @@ def parse_converted_pdf(input_path, output_path):
             # ========== TITLE REPETITION CORRECTION ==========
             if META['TITLE'] in line['meta'] and re.match(repeated_char_all_detect_regex, text):
                 line['text'] = re.sub(repeated_char_replace_regex, r'\2', text)
+                logger.debug(f'Replaced repeated characters: {text} -> {line["text"]}')
 
             # ========== CONGREGATION INSTRUCTION ==========
             if re.fullmatch(cong_inst_regex, text):
@@ -188,8 +194,9 @@ def parse_converted_pdf(input_path, output_path):
 
             data.append(line)
 
+    logger.debug(f'\n========== {output_path} ==========')
     with open(output_path, 'w') as f_out:
-        print_format(data, args. max_char_per_line, args.debug, f_out)
+        print_format(data, args.max_char_per_line, args.debug, f_out)
 
 
 def convert_pdf_to_txt(input_path, output_path):
@@ -208,24 +215,39 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--max_char_per_line', type=int, default=MAX_CHAR_PER_LINE)
     args = parser.parse_args()
 
-    print('Debug mode is active, No word windowing will be applied.')
+    if args.debug: 
+        logger.setLevel(logging.DEBUG)
 
     os.makedirs('input/', exist_ok=True)
     os.makedirs('output/', exist_ok=True)
     os.makedirs(TEMP_DIR, exist_ok=True)
 
+    success_count = 0
+    error_count = 0
+    skipped_count = 0
     path, _, files = next(os.walk(args.input_dir))
-    print(f'Found {len(files)} files inside {args.input_dir}')
+    logger.info(f'Found {len(files)} files inside {args.input_dir}')
     for file in files:
-        print(f'Converting {file}')
+        logger.info(f'Converting {file}')
         name, ext = os.path.splitext(file)
         name = name.replace(' ', '_')
         input_path = f'{path}/{file}/'
         temp_path = f'{TEMP_DIR}/{name}_temp.txt'
         output_path = f'{args.output_dir}/{name}_cleaned.txt'
         if ext == '.pdf':
-            convert_pdf_to_txt(input_path, temp_path)
-            parse_converted_pdf(temp_path, output_path)
-            print(f'Successfully convert {args.input_dir}/{file} to {output_path}')
+            try:
+                convert_pdf_to_txt(input_path, temp_path)
+                parse_converted_pdf(temp_path, output_path)
+                logger.info(f'Successfully convert {args.input_dir}/{file} to {output_path}')
+                success_count += 1
+            except Exception as err:
+                logger.error(err)
+                logger.error(f'Unable convert {args.input_dir}/{file}!')
+                error_count += 1
         else:
-            print(f'Skipping {file} as it is not a pdf file.')
+            logger.info(f'Skipping {file} as it is not a pdf file.')
+            skipped_count += 1
+    logger.info(
+        f'\nSummary:\n\tSuccessful conversion(s):\t{success_count}\n\tFailed conversion(s):\t\t{error_count}\n\tSkipped conversion(s):\t\t{skipped_count}'
+    )
+    logger.debug('<<<<<<<<<<<<<<<<<<<< END OF LOG >>>>>>>>>>>>>>>>>>>>\n')
