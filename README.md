@@ -11,11 +11,11 @@
 ## Run Script
 
 1. Put liturgi files (`.pdf` only) inside `input/`
-2. Run open the `.bat` files (`run_convert.bat` or `run_convert_short.bat` or `run_convert_long.bat`)  
+2. Open the `.bat` files (`run_convert.bat` or `run_convert_short.bat` or `run_convert_long.bat`)  
     As this script automatically separate too long lines into several lines. `run_convert_short.bat` will separate the
     too-long-line into shorter lines, so is its long-version (`run_convert_long.bat`).
    
-   OR
+   OR run:
     ```shell script
     python parse_pdf.py
     ```
