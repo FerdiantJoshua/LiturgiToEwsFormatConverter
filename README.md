@@ -28,7 +28,7 @@ python parse_pdf.py -h
 ```
 
 This will show all available arguments:
-```shell script
+```text
 usage: parse_pdf.py [-h] [-id INPUT_DIR] [-od OUTPUT_DIR] [-d]
                     [-m MAX_CHAR_PER_LINE]
 
