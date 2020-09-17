@@ -65,7 +65,7 @@ def _window_sentence(sentence, max_char_per_line=MAX_CHAR_PER_LINE):
         char = sentence[i]
         result += char
         if char in punctuations and char_count >= max_char_per_line and i < len(sentence) - END_LINE_TOLERANCE:
-            result += '\n'
+            result += '\n\n'
             char_count = 0
             i += 1 if sentence[i+1] == ' ' else 0
         i += 1
