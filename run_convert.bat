@@ -1,1 +1,1 @@
-python parse_pdf.py -m 100
+python parse_pdf.py
