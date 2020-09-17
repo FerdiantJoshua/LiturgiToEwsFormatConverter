@@ -6,5 +6,5 @@ log/
 
 **/*.txt
 **/*.pdf
-!**/*.example.*
+!**/*.example*.*
 !requirements.txt
