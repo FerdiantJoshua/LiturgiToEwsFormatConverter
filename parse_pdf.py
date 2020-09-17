@@ -94,9 +94,9 @@ def print_format(data: list, max_char_per_line: bool, with_meta : bool = False, 
         elif META['CONG_INST'] in datum['meta']:
             # SWAP INSTRUCTION WITH HEADING
             if META['HEAD1'] not in prev['meta'] and META['HEAD2'] not in prev['meta'] and META['HEAD3'] not in prev['meta']:
-                data[i], data[i-1] = data[i-1], data[i]
-                logger.debug(f'swapped: {datum}, {prev}')
+                data[i], data[i - 1] = data[i - 1], data[i]
                 buffer_out.insert(len(buffer_out) - 1, formatted)
+                logger.debug(f'swapped: """{buffer_out[-2]}""", """{buffer_out[-1]}"""')
             else:
                 buffer_out.append(formatted)
         elif META['SONG_INFO'] in datum['meta']:
@@ -159,7 +159,7 @@ def parse_converted_pdf(input_path, output_path):
             else:
                 line['meta'].append(META['BODY'])
 
-            # ========== TITLE REPETITION CORRECTION ==========
+            # ========== TITLE REPEATED CHAR CORRECTION ==========
             if META['TITLE'] in line['meta'] and re.match(repeated_char_all_detect_regex, text):
                 line['text'] = re.sub(repeated_char_replace_regex, r'\2', text)
                 logger.debug(f'Replaced repeated characters: {text} -> {line["text"]}')
@@ -184,7 +184,7 @@ def parse_converted_pdf(input_path, output_path):
                 line['meta'].append(META['SONG'])
 
             # ========== CONVERSATION START (SOMETIMES GET CUT) ==========
-            if 'body' in line['meta'] and len(line['meta']) == 1:
+            if 'song' not in line['meta'] and 'body' in line['meta'] and len(line['meta']) == 1:
                 if re.match(conv_start_regex, text):
                     line['meta'].append(META['CONV_START'])
                 elif re.fullmatch(cut_conv_start_name_regex, text):
