@@ -8,9 +8,8 @@ I. BERHIMPUN
 AJAKAN BERIBADAH
 (duduk)
 
-Pnt 1 : Hari ini, setelah sekian waktu lamanya, kita kembali
-
-melaksanakan Kebaktian Minggu kita di gedung gereja. Meskipun masih harus melaksanakannya dengan berbagai protokol kesehatan dalam jumlah jemaat yang terbatas,
+Pnt 1 : Hari ini, setelah sekian waktu lamanya, kita kembali melaksanakan Kebaktian Minggu kita di gedung gereja.
+Meskipun masih harus melaksanakannya dengan berbagai protokol kesehatan dalam jumlah jemaat yang terbatas,
 kita tetap bersyukur untuk kesempatan yang Tuhan berikan. Bagi Bapak Ibu yang saat ini juga mengikuti kebaktian dari rumah,
 biarlah rasa syukur serta sukacita tetap hadir dalam hati Saudara. Mazmur 117:1-2 berkata,
 "Pujilah TUHAN, hai segala bangsa,megahkanlah Dia, hai segala suku bangsa!
@@ -23,6 +22,7 @@ NYANYIAN PROSESI
 Intro
 "SEMUA YANG TERCIPTA" NKB 217:1&5; Syair : M. Karatem / H. A. Pandopo (1985).
 Lagu: M. Karatem (1985)
+
 do = f 3 ketuk
 Semua yang tercipta, hai alam semesta,
 agungkan nama Tuhan dan puji kasih-Nya.
@@ -62,6 +62,7 @@ NYANYIAN UMAT
 Intro
 "TUHAN, TOLONGLAH BANGUNKAN IMAN PKJ 282:1; Syair : B. Fobia (1998) (1945-1999).
 Lagu: Mai falie (Rote, Timor)
+
 do = es 4 ketuk
 Tuhan, tolonglah, bangunkan iman;
 pulihkanlah kasih yang remuk.
@@ -88,6 +89,7 @@ NYANYIAN UMAT
 Intro
 "KU INGIN BERPERANGAI" NKB 122:1-2; Syair dan Lagu : Ik wens tezijn als Jezus;
 dari Zangbundel - Joh. De Heer, Terj. Yamuger (1985).
+
 4 ketuk do = d
 'Ku ingin berperangai laksana Tuhanku,
 lemah lembut dan ramah, dan manis budiku.
@@ -122,6 +124,7 @@ Intro
 "AKU HENDAK TETAP BERHATI TULUS" NKB 193: 1; Syair : I Would Be True;
 bait 1-4: Howard A. Walter (1883-1918) dan bait 5: tidak dikenal; Terj.
 Tim Naynyian GKI (1990). Lagu : Joseph Y. Peek (1843-1911).
+
 4 ketuk do = f
 Aku hendak tetap berhati tulus
 kar'na teman mempercayaiku.
@@ -175,6 +178,7 @@ NYANYIAN UMAT
 Intro
 "MARI PUJI RAJA SORGA" KJ 288 : 1; Syair : Praise, My Soul. The King of Heaven,
 Mazmur 103: Henry Francis Lyte (1834); Terj. Yamuger (1982). Lagu : John Goss (1869).
+
 do = d 2 ketuk
 Mari, puji Raja sorga,
 persembahan bawalah!
@@ -197,6 +201,7 @@ Intro
 "SERIKAT PERSAUDARAAN" KJ 249: 1&3; Syair : Beewart op aard den broederband;
 H. Hasper (1935); Terj. I. S. Kijne (1899-1970), berdasarkan Efesus 4:2-7.
 Lagu : Kitab Nyanyian Wurtemburg (1784)
+
 do = bes 4 ketuk
 Serikat persaudaraan, berdirilah teguh!
 Sempurnakan persatuan di dalam Tuhanmu.

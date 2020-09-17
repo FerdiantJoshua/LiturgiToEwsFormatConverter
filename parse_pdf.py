@@ -105,7 +105,7 @@ def print_format(data: list, max_char_per_line: bool, with_meta : bool = False, 
             if META['SONG_INST'] in prev['meta']:
                 buffer_out[len(buffer_out) - 1] += ' ' + formatted
             else:
-                buffer_out.append(formatted)
+                buffer_out.append('\n' + formatted)
         elif META['CONV_START'] in datum['meta'] or META['CUT_CONV_START_NAME'] in datum['meta']:
             buffer_out.append('\n' + formatted)
         elif META['CUT_CONV_START_COLON'] in datum['meta']:
