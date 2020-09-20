@@ -3,6 +3,7 @@
 output it to plain text, html, xml or tags."""
 import argparse
 import logging
+import os
 import sys
 
 import pdfminer.high_level
@@ -53,6 +54,7 @@ def extract_text(files=[], outfile='-',
         outfp = open(outfile, "wb")
 
     for fname in files:
+        fname = os.path.normpath(fname)
         with open(fname, "rb") as fp:
             pdfminer.high_level.extract_text_to_fp(fp, **locals())
     return outfp
