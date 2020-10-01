@@ -10,16 +10,18 @@ from logger import Logger
 
 
 date_regex = re.compile(r'[A-Z]{4,6},\s+\d{1,2}\s+[A-Z]{3,10}\s+\d{4}')
-footer_regex = re.compile(r'Liturgi \w+\s+\d{1,2}\s+\w+\s+20\d\d')
-heading_1_regex = re.compile(r'[IVX0-9]{1,5}\.\s+[A-Z ]{5,30}')
+footer_regex = re.compile(r'^Liturgi (?:[A-Z][a-zA-Z,_]+\s+)+\d{1,2}\s+\w+\s+20\d\d')
+_heading_1_regex_1 = re.compile(r'[IVX0-9]{1,5}\.\s+[A-Z ]{5,30}')
+_heading_1_regex_2 = re.compile(r'[IVX0-9]{1,5}\.\s+[A-Za-z ]{5,30}')
+heading_1_regex_opts = [_heading_1_regex_1, _heading_1_regex_2]
 heading_2_regex = re.compile(r'[A-Z., ]{5,30}')
 heading_3_regex = re.compile(r'[A-Z.,\'"\- ]{5,50}')
 song_indicator_regex = re.compile(r'(?:\d{1,2}\.\s+)?NYANYIAN\s+(?:(?:UMAT)|[A-Z]+)')
-song_inst_regex = re.compile(r'(?:\w{2,3}\s+=\s+\w{1,2})|(?:\d{1,3}\s+ketuk)')
+song_inst_regex = re.compile(r'(?:\w{2,3}\s{0,}=\s{0,}\w{1,2})|(?:\d{1,3}\s{0,}ketuk)')
 cong_inst_regex = re.compile(r'(?:\(duduk\))|(?:\(berdiri\))')
 cong_inst_addt_regex = re.compile(r'\([a-zA-Z,.\- ]{3,200}\)')
 conv_start_regex = re.compile(r'^[A-Z][0-9a-zA-Z., ]{1,10}: ')
-cut_conv_start_name_regex = re.compile(r'^[A-Z][0-9a-zA-Z., ]{1,10}')
+cut_conv_start_name_regex = re.compile(r'^[A-Z][0-9a-zA-Z., ]{0,10}')
 cut_conv_start_colon_regex = re.compile(r'^: ')
 repeated_char_all_detect_regex = re.compile(r'(?:(.)\1{1}){3,}')
 repeated_char_replace_regex = re.compile(r'((.)\2{1})')
@@ -129,72 +131,86 @@ def parse_converted_pdf(input_path, output_path):
     with open(input_path, 'r', encoding='utf-8') as f_in:
         lines = f_in.readlines()
 
-    data = []
     is_first_heading_1_found = False
-    is_finding_song_info = False
-    is_reading_song = False
-    for line_ in lines:
-        text = preprocess(line_)
-        line = {'text': text, 'meta': []}
-        if (text != '') and not re.match(footer_regex, text):
-            line['text'] = text
+    regex_opt_idx = 0
+    while not is_first_heading_1_found and regex_opt_idx < len(heading_1_regex_opts):
+        data = []
+        is_finding_song_info = False
+        is_reading_song = False
+        for line_ in lines:
+            text = preprocess(line_)
+            line = {'text': text, 'meta': []}
+            if (text != '') and not re.match(footer_regex, text):
+                line['text'] = text
 
-            # ========== DATE ==========
-            if re.fullmatch(date_regex, text):
-                line['meta'].append(META['DATE'])
-                date = text.replace(' ', '_').lower()
+                # ========== DATE ==========
+                if re.fullmatch(date_regex, text):
+                    line['meta'].append(META['DATE'])
+                    date = text.replace(' ', '_').lower()
 
-            # ========== HEADING/BODY LEVEL ==========
-            if re.fullmatch(heading_1_regex, text):
-                line['meta'].append(META['HEAD1'])
-                is_first_heading_1_found = True
-                is_reading_song = False
-            elif not is_first_heading_1_found:
-                line['meta'].append(META['TITLE'])
-            elif re.fullmatch(heading_2_regex, text):
-                line['meta'].append(META['HEAD2'])
-                is_reading_song = False
-            elif re.fullmatch(heading_3_regex, text):
-                line['meta'].append(META['HEAD3'])
-            else:
-                line['meta'].append(META['BODY'])
+                # ========== HEADING/BODY LEVEL ==========
+                if re.fullmatch(heading_1_regex_opts[regex_opt_idx], text):
+                    line['meta'].append(META['HEAD1'])
+                    is_first_heading_1_found = True
+                    is_finding_song_info = False
+                    is_reading_song = False
+                elif not is_first_heading_1_found:
+                    line['meta'].append(META['TITLE'])
+                elif re.fullmatch(heading_2_regex, text):
+                    line['meta'].append(META['HEAD2'])
+                    is_finding_song_info = False
+                    is_reading_song = False
+                elif re.fullmatch(heading_3_regex, text):
+                    line['meta'].append(META['HEAD3'])
+                else:
+                    line['meta'].append(META['BODY'])
 
-            # ========== TITLE REPEATED CHAR CORRECTION ==========
-            if META['TITLE'] in line['meta'] and re.match(repeated_char_all_detect_regex, text):
-                line['text'] = re.sub(repeated_char_replace_regex, r'\2', text)
-                logger.debug(f'Replaced repeated characters: {text} -> {line["text"]}')
+                # ========== TITLE REPEATED CHAR CORRECTION ==========
+                if META['TITLE'] in line['meta'] and re.match(repeated_char_all_detect_regex, text):
+                    line['text'] = re.sub(repeated_char_replace_regex, r'\2', text)
+                    logger.debug(f'Replaced repeated characters: {text} -> {line["text"]}')
 
-            # ========== CONGREGATION INSTRUCTION ==========
-            if re.fullmatch(cong_inst_regex, text):
-                line['meta'].append(META['CONG_INST'])
-            elif re.fullmatch(cong_inst_addt_regex, text):
-                line['meta'].append(META['CONG_INST_ADDT'])
+                # ========== CONGREGATION INSTRUCTION ==========
+                if re.fullmatch(cong_inst_regex, text):
+                    line['meta'].append(META['CONG_INST'])
+                elif re.fullmatch(cong_inst_addt_regex, text):
+                    line['meta'].append(META['CONG_INST_ADDT'])
 
-            # ========== SONG ==========
-            if re.match(song_indicator_regex, text):
-                line['meta'].append(META['SONG'])
-                is_finding_song_info = True
-                is_reading_song = True
-            elif re.match(song_inst_regex, text):
-                line['meta'].append(META['SONG_INST'])
-                is_finding_song_info = False
-            elif is_finding_song_info and META['HEAD3'] not in line['meta'] and META['CONG_INST_ADDT'] not in line['meta']:
-                line['meta'].append(META['SONG_INFO'])
-            elif is_reading_song:
-                line['meta'].append(META['SONG'])
+                # ========== SONG ==========
+                if re.match(song_indicator_regex, text):
+                    line['meta'].append(META['SONG'])
+                    is_finding_song_info = True
+                    is_reading_song = True
+                elif is_reading_song and re.match(song_inst_regex, text):
+                    line['meta'].append(META['SONG_INST'])
+                    is_finding_song_info = False
+                elif is_finding_song_info and META['HEAD3'] not in line['meta'] and META['CONG_INST_ADDT'] not in line['meta']:
+                    line['meta'].append(META['SONG_INFO'])
+                elif is_reading_song:
+                    line['meta'].append(META['SONG'])
 
-            # ========== CONVERSATION START (SOMETIMES GET CUT) ==========
-            if 'song' not in line['meta'] and 'body' in line['meta'] and len(line['meta']) == 1:
-                if re.match(conv_start_regex, text):
-                    line['meta'].append(META['CONV_START'])
-                elif re.fullmatch(cut_conv_start_name_regex, text):
-                    line['meta'].append(META['CUT_CONV_START_NAME'])
-                elif re.match(cut_conv_start_colon_regex, text):
-                    line['meta'].append(META['CUT_CONV_START_COLON'])
+                # ========== CONVERSATION START (SOMETIMES GET CUT) ==========
+                if 'song' not in line['meta'] and 'body' in line['meta'] and len(line['meta']) == 1:
+                    if re.match(conv_start_regex, text):
+                        line['meta'].append(META['CONV_START'])
+                    elif re.fullmatch(cut_conv_start_name_regex, text):
+                        line['meta'].append(META['CUT_CONV_START_NAME'])
+                    elif re.match(cut_conv_start_colon_regex, text):
+                        line['meta'].append(META['CUT_CONV_START_COLON'])
 
-            data.append(line)
+                # heading1 and song heading are sometimes swapped
+                if META['HEAD1'] in line['meta'] and META['SONG'] in data[-1]['meta'] and META['BODY'] not in data[-1]['meta']:
+                    data.insert(len(data) - 1, line)
+                    is_finding_song_info = True
+                    is_reading_song = True
+                    logger.debug(f'swapped: """{data[-2]["text"]}""", """{data[-1]["text"]}"""')
+                else:
+                    data.append(line)
 
-    logger.debug(f'\n========== {output_path} ==========')
+        if not is_first_heading_1_found:
+            regex_opt_idx += 1
+            logger.info(f'Heading 1 was not found. Retrying with another heading_1_regex (opt {regex_opt_idx + 1})')
+
     with open(output_path, 'w') as f_out:
         print_format(data, args.max_char_per_line, args.debug, f_out)
 
@@ -228,12 +244,13 @@ if __name__ == '__main__':
     path, _, files = next(os.walk(args.input_dir))
     logger.info(f'Found {len(files)} files inside {args.input_dir}')
     for file in files:
-        logger.info(f'Converting {file}')
         name, ext = os.path.splitext(file)
         name = name.replace(' ', '_')
         input_path = f'{path}/{file}/'
         temp_path = f'{TEMP_DIR}/{name}_temp.txt'
         output_path = f'{args.output_dir}/{name}_cleaned.txt'
+        logger.debug(f'\n========== {output_path} ==========')
+        logger.info(f'Converting {file}')
         if ext == '.pdf':
             try:
                 convert_pdf_to_txt(input_path, temp_path)
@@ -242,7 +259,7 @@ if __name__ == '__main__':
                 success_count += 1
             except Exception as err:
                 logger.error(err)
-                logger.error(f'Unable convert {args.input_dir}/{file}!')
+                logger.error(f'Unable to convert {args.input_dir}/{file}!')
                 error_count += 1
         else:
             logger.info(f'Skipping {file} as it is not a pdf file.')
