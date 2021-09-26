@@ -7,6 +7,7 @@ import sys
 from unidecode import unidecode
 
 from logger import Logger
+from pdfminer.high_level import extract_text
 
 
 date_regex = re.compile(r'[A-Z]{4,6},\s+\d{1,2}\s+[A-Z]{3,10}\s+\d{4}')
@@ -41,15 +42,11 @@ META = {
     'CUT_CONV_START_COLON': 'cut_conversation_start_colon',
     'BODY': 'body'
 }
-TEMP_DIR = 'temp/'
 MAX_CHAR_PER_LINE = 70
 END_LINE_TOLERANCE = 5
 
 
 logger = Logger().get_logger()
-
-class PdfMinerException(Exception):
-    pass
 
 
 replacement_regex = re.compile(r' {2,99}')
@@ -57,7 +54,7 @@ def preprocess(text):
     return re.sub(replacement_regex, r' ', unidecode(text.strip()))
 
 
-def _window_sentence(sentence, max_char_per_line=MAX_CHAR_PER_LINE):
+def _window_sentence(sentence, max_char_per_line=MAX_CHAR_PER_LINE) -> str:
     punctuations = '.,!?;'
     char_count = 0
     result = ''
@@ -74,7 +71,7 @@ def _window_sentence(sentence, max_char_per_line=MAX_CHAR_PER_LINE):
     return result
 
 
-def print_format(data: list, max_char_per_line: bool, with_meta : bool = False, std_out=sys.stdout) -> None:
+def _prettify_result(data: list, max_char_per_line: int = MAX_CHAR_PER_LINE, with_meta : bool = False) -> [str]:
     buffer_out = []
     for i in range(len(data)):
         datum = data[i]
@@ -123,13 +120,14 @@ def print_format(data: list, max_char_per_line: bool, with_meta : bool = False, 
             else:
                 buffer_out.append('\n' + formatted)
 
+    prettified = []
     for buffer in buffer_out:
-        std_out.write(_window_sentence(buffer, max_char_per_line) + '\n')
+        prettified.append(_window_sentence(buffer, max_char_per_line))
+    return prettified
 
 
-def parse_converted_pdf(input_path, output_path):
-    with open(input_path, 'r', encoding='utf-8') as f_in:
-        lines = f_in.readlines()
+def parse_converted_pdf(texts: str, max_char_per_line: int = MAX_CHAR_PER_LINE, debug: bool = False) -> str:
+    lines = texts.split('\n')
 
     is_first_heading_1_found = False
     regex_opt_idx = 0
@@ -211,16 +209,12 @@ def parse_converted_pdf(input_path, output_path):
             regex_opt_idx += 1
             logger.info(f'Heading 1 was not found. Retrying with another heading_1_regex (opt {regex_opt_idx + 1})')
 
-    with open(output_path, 'w') as f_out:
-        print_format(data, args.max_char_per_line, args.debug, f_out)
+    return '\n'.join(_prettify_result(data, max_char_per_line, debug))
 
 
-def convert_pdf_to_txt(input_path, output_path):
+def extract_pdf_text(input_path) -> str:
     input_path = os.path.normpath(input_path)
-    output_path = os.path.normpath(output_path)
-    exit_code = os.system(f'python pdf2txt.py -o "{output_path}" "{input_path}"')
-    if exit_code != 0:
-        raise PdfMinerException(f'PdfMiner exit_code is {exit_code}! Exiting..')
+    return extract_text(input_path)
 
 
 if __name__ == '__main__':
@@ -236,7 +230,6 @@ if __name__ == '__main__':
 
     os.makedirs('input/', exist_ok=True)
     os.makedirs('output/', exist_ok=True)
-    os.makedirs(TEMP_DIR, exist_ok=True)
 
     success_count = 0
     error_count = 0
@@ -247,14 +240,15 @@ if __name__ == '__main__':
         name, ext = os.path.splitext(file)
         name = name.replace(' ', '_')
         input_path = f'{path}/{file}/'
-        temp_path = f'{TEMP_DIR}/{name}_temp.txt'
         output_path = f'{args.output_dir}/{name}_cleaned.txt'
         logger.debug(f'\n========== {output_path} ==========')
         logger.info(f'Converting {file}')
         if ext == '.pdf':
             try:
-                convert_pdf_to_txt(input_path, temp_path)
-                parse_converted_pdf(temp_path, output_path)
+                converted = extract_pdf_text(input_path)
+                parsed = parse_converted_pdf(converted, args.max_char_per_line, args.debug)
+                with open(output_path, 'w', encoding='utf-8') as f_out:
+                    f_out.write(parsed)
                 logger.info(f'Successfully convert {args.input_dir}/{file} to {output_path}')
                 success_count += 1
             except Exception as err:
