@@ -252,7 +252,7 @@ if __name__ == '__main__':
                 logger.info(f'Successfully convert {args.input_dir}/{file} to {output_path}')
                 success_count += 1
             except Exception as err:
-                logger.error(err)
+                logger.exception(err)
                 logger.error(f'Unable to convert {args.input_dir}/{file}!')
                 error_count += 1
         else:
