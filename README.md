@@ -4,30 +4,48 @@
 
 1. Python 3.6
 2. Packages
+
     ```shell script
     pip install -r requirements.txt    
     ```
-   
-## Run Script
+
+## GUI Mode
+
+1. Double click the `main.py`, or run this command in terminal:
+
+    ```shell script
+    python main.py
+    ```
+
+2. Follow the navigation in the GUI: load a PDF file, convert it, then copy to clipboard
+
+## CLI Mode
+
+### Run Script
 
 1. Put liturgi files (`.pdf` only) inside `input/`
 2. Open the `.bat` files (`run_convert.bat` or `run_convert_short.bat` or `run_convert_long.bat`)  
     As this script automatically separate too long lines into several lines. `run_convert_short.bat` will separate the
     too-long-line into shorter lines, so is its long-version (`run_convert_long.bat`).
-   
+
    OR run this command in terminal:
+
     ```shell script
     python parse_pdf.py
     ```
+
 3. Resulting files will be inside `output/`
 
-## More Usage
+### More Usage
+
 Run this command in terminal:
+
 ```shell script
 python parse_pdf.py -h
 ```
 
 This will show all available arguments:
+
 ```text
 usage: parse_pdf.py [-h] [-id INPUT_DIR] [-od OUTPUT_DIR] [-d]
                     [-m MAX_CHAR_PER_LINE]
@@ -42,4 +60,4 @@ optional arguments:
 
 ## Author
 
-Ferdiant Joshua M.
+Ferdiant Joshua Muis
