@@ -20,19 +20,20 @@ def postprocess_text(text: str, additional_separator: str = DEFAULT_ADDITIONAL_S
 
     current_slide_header = DEFAULT_SLIDE_HEADER
     prev_line_is_separator = False
-    print(lines)
     for i in range(len(lines)):
         if lines[i] == '':
             lines[i] = _print_slide_separator(additional_separator, current_slide_header, slide_header_tag)
             prev_line_is_separator = True
             continue
 
-        prev_line_is_separator = False
         for regex in ALL_HEADING_REGEX:
-            if re.fullmatch(regex, lines[i]):
-                current_slide_header = lines[i]
+            match_object = re.fullmatch(regex, lines[i])
+            if match_object:
+                current_slide_header = match_object.group(1)
                 if prev_line_is_separator:
+                    print('\t' + lines[i-1])
                     lines[i-1] = _print_slide_separator(additional_separator, current_slide_header, slide_header_tag)
+                    prev_line_is_separator = False
                 break
     
     return '\n'.join(lines)

@@ -12,11 +12,11 @@ from pdfminer.high_level import extract_text
 
 date_regex = re.compile(r'[A-Z]{4,6},\s+\d{1,2}\s+[A-Z]{3,10}\s+\d{4}')
 footer_regex = re.compile(r'^Liturgi (?:[A-Z][a-zA-Z,_]+\s+)+\d{1,2}\s+\w+\s+20\d\d')
-_heading_1_regex_1 = re.compile(r'[IVX0-9]{1,5}\.\s+[A-Z ]{5,30}')
-_heading_1_regex_2 = re.compile(r'[IVX0-9]{1,5}\.\s+[A-Za-z ]{5,30}')
+_heading_1_regex_1 = re.compile(r'[IVX0-9]{1,5}\.\s+([A-Z ]{5,30})')
+_heading_1_regex_2 = re.compile(r'[IVX0-9]{1,5}\.\s+([A-Za-z ]{5,30})')
 heading_1_regex_opts = [_heading_1_regex_1, _heading_1_regex_2]
-heading_2_regex = re.compile(r'[A-Z., ]{5,30}')
-heading_3_regex = re.compile(r'[A-Z.,\'"\- ]{5,50}')
+heading_2_regex = re.compile(r'([A-Z., ]{5,30})')
+heading_3_regex = re.compile(r'([A-Z.,\'"\- ]{5,50})')
 song_indicator_regex = re.compile(r'(?:\d{1,2}\.\s+)?NYANYIAN\s+(?:(?:UMAT)|[A-Z]+)')
 song_inst_regex = re.compile(r'(?:\w{2,3}\s{0,}=\s{0,}\w{1,2})|(?:\d{1,3}\s{0,}ketuk)')
 cong_inst_regex = re.compile(r'(?:\(duduk\))|(?:\(berdiri\))')
