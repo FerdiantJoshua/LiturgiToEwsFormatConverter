@@ -6,7 +6,8 @@ from parse_pdf import heading_1_regex_opts, heading_2_regex, heading_3_regex
 DEFAULT_ADDITIONAL_SEPARATOR = '[===]'
 DEFAULT_SLIDE_HEADER = 'Kebaktian'
 DEFAULT_SLIDE_HEADER_TAG = 'sht'
-ALL_HEADING_REGEX = [*heading_1_regex_opts, heading_2_regex, heading_3_regex]
+KJ_NKB_PKJ_REGEX = re.compile(r'^((?:(?:KJ)|(?:NKB)|(?:PKJ)) ?[\d\w]+ ?: ?\d?.*)')
+ALL_HEADING_REGEX = [*heading_1_regex_opts, heading_2_regex, heading_3_regex, KJ_NKB_PKJ_REGEX]
 
 def _format_slide_header(slide_header:str, slide_header_tag:str) -> str:
     return f'{{{slide_header_tag}}}{slide_header}{{/{slide_header_tag}}}'
