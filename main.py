@@ -4,7 +4,7 @@ from tkinter import filedialog, scrolledtext
 
 from logger import Logger
 from output_augmenter import postprocess_text
-from parse_pdf import extract_pdf_text, parse_converted_pdf
+from parse_pdf import MAX_CHAR_PER_LINE, extract_pdf_text, parse_converted_pdf
 
 
 logger = Logger().get_logger()
@@ -38,42 +38,48 @@ class Application(tk.Frame):
         )
         self.lbl_chosen_file.grid(row=2, column=0, pady=(0,16))
 
+        self.lbl_max_char_per_line = tk.Label(self, text='Max char per line: ')
+        self.lbl_max_char_per_line.grid(row=3, column=0)
+        self.txt_max_char_per_line = tk.Entry(self, width=20)
+        self.txt_max_char_per_line.insert(-1, MAX_CHAR_PER_LINE)
+        self.txt_max_char_per_line.grid(row=4, column=0, pady=(0,8))
+
         self.convert = tk.Button(
             self,
             text='Convert to EWS Format',
             command=self.convert_to_ews_format
         )
-        self.convert.grid(row=3, column=0)
+        self.convert.grid(row=5, column=0)
         
         self.lbl_error = tk.Label(self, text='', foreground='red')
-        self.lbl_error.grid(row=4, column=0)
+        self.lbl_error.grid(row=6, column=0)
 
         self.txt_result = scrolledtext.ScrolledText(self, height=25)
-        self.txt_result.grid(row=5, column=0, pady=(0,16))
+        self.txt_result.grid(row=7, column=0, pady=(0,16))
 
         self.copy = tk.Button(
             self,
             text='Copy result to clipboard',
             command=lambda: self.copy_result(self.txt_result)
         )
-        self.copy.grid(row=6, column=0, pady=(0,16))
+        self.copy.grid(row=8, column=0, pady=(0,16))
 
         self.txt_result_postprocessed = scrolledtext.ScrolledText(self, height=25)
-        self.txt_result_postprocessed.grid(row=5, column=1, pady=(0,16))
+        self.txt_result_postprocessed.grid(row=7, column=1, pady=(0,16))
 
         self.postprocess = tk.Button(
             self,
             text='Postprocess',
             command=self.postprocess
         )
-        self.postprocess.grid(row=6, column=1)
+        self.postprocess.grid(row=8, column=1)
 
         self.copy_postprocessed = tk.Button(
             self,
             text='Copy result to clipboard',
             command=lambda: self.copy_result(self.txt_result_postprocessed)
         )
-        self.copy_postprocessed.grid(row=7, column=1, pady=(0,16))
+        self.copy_postprocessed.grid(row=9, column=1, pady=(0,16))
 
     def open_file(self):
         filepath = filedialog.askopenfilename(
@@ -91,8 +97,11 @@ class Application(tk.Frame):
         if ext == '.pdf':
             try:
                 self.txt_result.delete('1.0', tk.END)
+
+                max_char_per_line = self.txt_max_char_per_line.get() or 0
                 converted = extract_pdf_text(filepath)
-                parsed = parse_converted_pdf(converted)
+                parsed = parse_converted_pdf(converted, int(max_char_per_line))
+
                 self.txt_result.insert('end', parsed)
                 msg = f'Successfully convert {filepath}'
                 self.lbl_error.configure(text='')
