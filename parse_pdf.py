@@ -8,7 +8,7 @@ import sys
 from unidecode import unidecode
 from pdfminer.high_level import extract_text
 
-from logging_config import ROOT_MODULE_NAME, LOGGING_CONFIG
+from logging_config import ROOT_MODULE_NAME, LOGGING_CONFIG, LOG_LEVEL
 
 
 date_regex = re.compile(r'[A-Z]{4,6},\s+\d{1,2}\s+[A-Z]{3,10}\s+\d{4}')
@@ -200,12 +200,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-id', '--input_dir', default='input')
     parser.add_argument('-od', '--output_dir', default='output')
-    parser.add_argument('-d', '--debug', action='store_true')
     parser.add_argument('-m', '--max_char_per_line', type=int, default=MAX_CHAR_PER_LINE)
     args = parser.parse_args()
-
-    if args.debug: 
-        logger.setLevel(logging.DEBUG)
 
     os.makedirs('input/', exist_ok=True)
     os.makedirs('output/', exist_ok=True)
@@ -225,7 +221,7 @@ if __name__ == '__main__':
         if ext == '.pdf':
             try:
                 converted = extract_pdf_text(input_path)
-                parsed = parse_converted_pdf(converted, args.max_char_per_line, args.debug)
+                parsed = parse_converted_pdf(converted, args.max_char_per_line, LOG_LEVEL==logging.DEBUG)
                 with open(output_path, 'w', encoding='utf-8') as f_out:
                     f_out.write(parsed)
                 logger.info(f'Successfully convert {args.input_dir}/{file} to {output_path}')

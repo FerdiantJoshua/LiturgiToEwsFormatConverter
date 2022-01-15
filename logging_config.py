@@ -31,6 +31,9 @@ LOGGING_CONFIG = dict(
         API_MODULE_NAME: {
             'handlers': ['console_handler', 'time_rotating_file_handler_api'],
             'propagate': False
+        },
+        'pdfminer': {
+            'level': logging.ERROR
         }
     },
     handlers = {
