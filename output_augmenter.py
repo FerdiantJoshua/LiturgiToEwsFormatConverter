@@ -12,18 +12,14 @@ ALL_HEADING_REGEX = [*heading_1_regex_opts, heading_2_regex, heading_3_regex, KJ
 def _format_slide_header(slide_header:str, slide_header_tag:str) -> str:
     return f'{{{slide_header_tag}}}{slide_header}{{/{slide_header_tag}}}'
 
-def _print_slide_separator(additional_separator: str = '', slide_header: str = '', slide_header_tag: str = '') -> str:
-    return additional_separator if not slide_header or not slide_header_tag else \
-        f'{additional_separator}\n{_format_slide_header(slide_header, slide_header_tag)}'
-
 def postprocess_text(text: str, additional_separator: str = DEFAULT_ADDITIONAL_SEPARATOR, slide_header_tag: str = DEFAULT_SLIDE_HEADER_TAG) -> str:
     lines = text.split('\n')
 
     current_slide_header = DEFAULT_SLIDE_HEADER
-    prev_line_is_separator = False
+    prev_line_is_separator = True
     for i in range(len(lines)):
         if lines[i] == '':
-            lines[i] = _print_slide_separator(additional_separator, current_slide_header, slide_header_tag)
+            lines[i] = additional_separator
             prev_line_is_separator = True
             continue
 
@@ -31,10 +27,11 @@ def postprocess_text(text: str, additional_separator: str = DEFAULT_ADDITIONAL_S
             match_object = re.fullmatch(regex, lines[i])
             if match_object:
                 current_slide_header = match_object.group(1)
-                if prev_line_is_separator:
-                    print('\t' + lines[i-1])
-                    lines[i-1] = _print_slide_separator(additional_separator, current_slide_header, slide_header_tag)
-                    prev_line_is_separator = False
                 break
+
+        if prev_line_is_separator:
+            slide_header = _format_slide_header(current_slide_header, slide_header_tag)
+            lines[i] = f'{slide_header}' if match_object else f'{slide_header}\n{lines[i]}'
+            prev_line_is_separator = False
     
     return '\n'.join(lines)
