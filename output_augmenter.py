@@ -35,3 +35,26 @@ def postprocess_text(text: str, additional_separator: str = DEFAULT_ADDITIONAL_S
             prev_line_is_separator = False
     
     return '\n'.join(lines)
+
+# if __name__ == '__main__':
+#     with open('output/Tata_Ibadah_Kristus_Raja_2021,_21_Nov_-_(FINAL)_cleaned.txt', 'r') as f_in:
+#         lines = f_in.read()
+#     lines = postprocess_text(lines)
+#     with open('result.txt', 'w') as f_out:
+#         f_out.write('\n'.join(lines))
+
+
+# class Line:
+#     def __init__(self, text: str = '', meta: [str] = None, slide_header: str = DEFAULT_SLIDE_HEADER):
+#         self.text = text
+#         self.meta = [] if meta is None else meta
+#         self.slide_header = slide_header
+
+#     def __getitem__(self, key):
+#         return getattr(self, key)
+
+#     def __setitem__(self, key, value):
+#         setattr(self, key, value)
+
+#     def __str__(self):
+#         return f'Text="{self.text}", Meta="{self.meta}"'
