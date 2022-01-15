@@ -1,13 +1,15 @@
 import os
+import logging
+from logging.config import dictConfig
 import tkinter as tk
 from tkinter import filedialog, scrolledtext
 
-from logger import Logger
+from logging_config import ROOT_MODULE_NAME, LOGGING_CONFIG, LOG_LEVEL
 from output_augmenter import postprocess_text
 from parse_pdf import MAX_CHAR_PER_LINE, extract_pdf_text, parse_converted_pdf
 
-
-logger = Logger().get_logger()
+dictConfig(LOGGING_CONFIG)
+logger = logging.getLogger(f'{ROOT_MODULE_NAME}.{__name__}')
 
 class Application(tk.Frame):
     def __init__(self, master=None):
@@ -100,7 +102,7 @@ class Application(tk.Frame):
 
                 max_char_per_line = self.txt_max_char_per_line.get() or 0
                 converted = extract_pdf_text(filepath)
-                parsed = parse_converted_pdf(converted, int(max_char_per_line))
+                parsed = parse_converted_pdf(converted, int(max_char_per_line), LOG_LEVEL == logging.DEBUG)
 
                 self.txt_result.insert('end', parsed)
                 msg = f'Successfully convert {filepath}'
@@ -117,7 +119,7 @@ class Application(tk.Frame):
             text = self.txt_result.get('1.0', tk.END)
             postprocessed = postprocess_text(text)
             self.txt_result_postprocessed.insert('end', postprocessed)
-            msg = f'Successfully postprocess'
+            msg = f'Successfully postprocess text!'
             self.lbl_error.configure(text='')
             logger.info(msg)
         except Exception as err:

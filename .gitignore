@@ -8,3 +8,6 @@ log/
 **/*.pdf
 !**/*.example*.*
 !requirements.txt
+
+.env*
+!.env.example

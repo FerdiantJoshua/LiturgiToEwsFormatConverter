@@ -1,13 +1,14 @@
 import argparse
 import logging
+from logging.config import dictConfig
 import os
 import re
 import sys
 
 from unidecode import unidecode
-
-from logger import Logger
 from pdfminer.high_level import extract_text
+
+from logging_config import ROOT_MODULE_NAME, LOGGING_CONFIG
 
 
 date_regex = re.compile(r'[A-Z]{4,6},\s+\d{1,2}\s+[A-Z]{3,10}\s+\d{4}')
@@ -18,7 +19,6 @@ heading_1_regex_opts = [_heading_1_regex_1, _heading_1_regex_2]
 heading_2_regex = re.compile(r'([A-Z., ]{5,30})')
 heading_3_regex = re.compile(r'([A-Z.,\'"\- ]{5,50})')
 song_indicator_regex = re.compile(r'(?:\d{1,2}\.\s+)?NYANYIAN\s+(?:(?:UMAT)|[A-Z]+)')
-song_inst_regex = re.compile(r'(?:\w{2,3}\s{0,}=\s{0,}\w{1,2})|(?:\d{1,3}\s{0,}ketuk)')
 cong_inst_regex = re.compile(r'(?:\(duduk\))|(?:\(berdiri\))')
 cong_inst_addt_regex = re.compile(r'\([a-zA-Z,.\- ]{3,200}\)')
 conv_start_regex = re.compile(r'^[A-Z][0-9a-zA-Z., ]{1,10}: ')
@@ -33,8 +33,6 @@ META = {
     'HEAD2': 'heading_2',
     'HEAD3': 'heading_3',
     'SONG': 'song',
-    'SONG_INFO': 'song_info',
-    'SONG_INST': 'song_instruction',
     'CONG_INST': 'congregate_instruction',
     'CONG_INST_ADDT': 'congregate_instruction_additional',
     'CONV_START': 'conversation_start',
@@ -45,8 +43,9 @@ META = {
 MAX_CHAR_PER_LINE = 70
 END_LINE_TOLERANCE = 5
 
-
-logger = Logger().get_logger()
+if __name__ == '__main__':
+    dictConfig(LOGGING_CONFIG)
+logger = logging.getLogger(f'{ROOT_MODULE_NAME}.{__name__}')
 
 
 replacement_regex = re.compile(r' {2,99}')
@@ -82,9 +81,7 @@ def _prettify_result(data: list, max_char_per_line: int = MAX_CHAR_PER_LINE, wit
         if META['TITLE'] in datum['meta'] or META['CONG_INST_ADDT'] in datum['meta']:
             buffer_out.append(formatted)
         elif META['SONG'] in datum['meta']:
-            if META['HEAD3'] in datum['meta']:
-                buffer_out.append('\nIntro\n' + formatted)
-            elif META['HEAD1'] in datum['meta'] or META['HEAD2'] in datum['meta']:
+            if not META['SONG'] in prev['meta']:
                 buffer_out.append('\n' + formatted)
             elif META['BODY'] in datum['meta']:
                 buffer_out.append(formatted)
@@ -98,13 +95,6 @@ def _prettify_result(data: list, max_char_per_line: int = MAX_CHAR_PER_LINE, wit
                 logger.debug(f'swapped: """{buffer_out[-2]}""", """{buffer_out[-1]}"""')
             else:
                 buffer_out.append(formatted)
-        elif META['SONG_INFO'] in datum['meta']:
-            buffer_out[len(buffer_out) - 1] += ' ' + formatted
-        elif META['SONG_INST'] in datum['meta']:
-            if META['SONG_INST'] in prev['meta']:
-                buffer_out[len(buffer_out) - 1] += ' ' + formatted
-            else:
-                buffer_out.append('\n' + formatted)
         elif META['CONV_START'] in datum['meta'] or META['CUT_CONV_START_NAME'] in datum['meta']:
             buffer_out.append('\n' + formatted)
         elif META['CUT_CONV_START_COLON'] in datum['meta']:
@@ -133,7 +123,6 @@ def parse_converted_pdf(texts: str, max_char_per_line: int = MAX_CHAR_PER_LINE, 
     regex_opt_idx = 0
     while not is_first_heading_1_found and regex_opt_idx < len(heading_1_regex_opts):
         data = []
-        is_finding_song_info = False
         is_reading_song = False
         for line_ in lines:
             text = preprocess(line_)
@@ -150,13 +139,11 @@ def parse_converted_pdf(texts: str, max_char_per_line: int = MAX_CHAR_PER_LINE, 
                 if re.fullmatch(heading_1_regex_opts[regex_opt_idx], text):
                     line['meta'].append(META['HEAD1'])
                     is_first_heading_1_found = True
-                    is_finding_song_info = False
                     is_reading_song = False
                 elif not is_first_heading_1_found:
                     line['meta'].append(META['TITLE'])
                 elif re.fullmatch(heading_2_regex, text):
                     line['meta'].append(META['HEAD2'])
-                    is_finding_song_info = False
                     is_reading_song = False
                 elif re.fullmatch(heading_3_regex, text):
                     line['meta'].append(META['HEAD3'])
@@ -176,15 +163,8 @@ def parse_converted_pdf(texts: str, max_char_per_line: int = MAX_CHAR_PER_LINE, 
 
                 # ========== SONG ==========
                 if re.match(song_indicator_regex, text):
-                    line['meta'].append(META['SONG'])
-                    is_finding_song_info = True
                     is_reading_song = True
-                elif is_reading_song and re.match(song_inst_regex, text):
-                    line['meta'].append(META['SONG_INST'])
-                    is_finding_song_info = False
-                elif is_finding_song_info and META['HEAD3'] not in line['meta'] and META['CONG_INST_ADDT'] not in line['meta']:
-                    line['meta'].append(META['SONG_INFO'])
-                elif is_reading_song:
+                elif is_reading_song and META['CONG_INST'] not in line['meta']:
                     line['meta'].append(META['SONG'])
 
                 # ========== CONVERSATION START (SOMETIMES GET CUT) ==========
@@ -199,7 +179,6 @@ def parse_converted_pdf(texts: str, max_char_per_line: int = MAX_CHAR_PER_LINE, 
                 # heading1 and song heading are sometimes swapped
                 if META['HEAD1'] in line['meta'] and META['SONG'] in data[-1]['meta'] and META['BODY'] not in data[-1]['meta']:
                     data.insert(len(data) - 1, line)
-                    is_finding_song_info = True
                     is_reading_song = True
                     logger.debug(f'swapped: """{data[-2]["text"]}""", """{data[-1]["text"]}"""')
                 else:
