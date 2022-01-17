@@ -7,7 +7,7 @@ log/
 **/*.txt
 **/*.pdf
 !**/*.example*.*
-!requirements.txt
+!requirements*.txt
 
 .env*
 !.env.example
