@@ -4,6 +4,7 @@ import json
 import logging
 from typing import Union, List, Optional
 
+from environs import Env
 from flask import Flask, jsonify, request, send_from_directory
 
 from logging_config import ROOT_MODULE_NAME
@@ -41,6 +42,13 @@ def create_app(debug: bool = False):
         postprocessed = converter_wrapper.postprocess(body.get('text', ''))
         response = jsonify(postprocessed)
         return response
+
+    @app.route('/reload-logging-config')
+    def reload_logging_config():
+        env = Env()
+        env.read_env(override=True)
+        logging.root.setLevel(env.log_level('LOG_LEVEL', logging.INFO))
+        return jsonify({'log_level': logging.getLevelName(logging.root.level)})
 
     @app.route('/health')
     def health():

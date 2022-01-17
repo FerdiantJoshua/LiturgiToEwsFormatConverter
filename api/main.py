@@ -4,6 +4,7 @@ import json
 import logging
 from typing import Union, List, Optional
 
+from environs import Env
 from fastapi import FastAPI, Request, status, File, Form, UploadFile
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, validator
@@ -60,6 +61,13 @@ def create_app(debug: bool = False):
             status_code=status.HTTP_200_OK
         )
         return response
+
+    @app.get('/reload-logging-config')
+    async def reload_logging_config():
+        env = Env()
+        env.read_env(override=True)
+        logging.root.setLevel(env.log_level('LOG_LEVEL', logging.INFO))
+        return {'log_level': logging.getLevelName(logging.root.level)}
 
     @app.get('/health')
     def health():
