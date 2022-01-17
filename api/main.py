@@ -26,7 +26,7 @@ class PostprocessRequest(BaseModel):
         return val
 
 
-def create_app():
+def create_app(debug: bool = False):
     converter_wrapper = ConverterWrapper()
 
     app = FastAPI(
@@ -43,7 +43,7 @@ def create_app():
     @app.post('/convert')
     async def convert(input_file: UploadFile = File(...), max_char_per_line: Optional[int] = Form(MAX_CHAR_PER_LINE)):
         logger.debug('Filename: "%s". Max char per line: "%d"', input_file.filename, max_char_per_line)
-        conversion_result = converter_wrapper.convert(input_file, max_char_per_line)
+        conversion_result = converter_wrapper.convert(input_file, max_char_per_line, debug)
 
         response = JSONResponse(
             conversion_result,

@@ -18,13 +18,13 @@ class ConverterWrapper:
     def __init__(self):
         pass
 
-    def convert(self, input_file: File, max_char_per_line: int = MAX_CHAR_PER_LINE) -> dict:
+    def convert(self, input_file: File, max_char_per_line: int = MAX_CHAR_PER_LINE, debug: bool = False) -> dict:
         result = ''
         input_file.file.seek(0, io.SEEK_END)
         if input_file.file.tell() > 0:
             try:
                 converted = extract_text(input_file.file)
-                result = parse_converted_pdf(converted, int(max_char_per_line))
+                result = parse_converted_pdf(converted, int(max_char_per_line), debug)
 
                 msg = f'Successfully convert "{input_file.filename}!"'
                 logger.info(msg)
