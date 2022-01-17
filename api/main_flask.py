@@ -16,7 +16,7 @@ logger = logging.getLogger(f'{ROOT_MODULE_NAME}.{__name__}')
 
 
 def create_app(debug: bool = False):
-    converter_wrapper = ConverterWrapper()
+    converter_wrapper = ConverterWrapper(debug)
 
     app = Flask(__name__,
                 static_url_path='/static',
@@ -31,7 +31,7 @@ def create_app(debug: bool = False):
         input_file = request.files['input_file']
         max_char_per_line = request.form.get('max_char_per_line', MAX_CHAR_PER_LINE)
         logger.debug('Filename: "%s". Max char per line: "%d"', input_file.filename, max_char_per_line)
-        conversion_result = converter_wrapper.convert(input_file, max_char_per_line, debug)
+        conversion_result = converter_wrapper.convert(input_file, max_char_per_line)
 
         response = jsonify(conversion_result)
         return response
@@ -47,7 +47,9 @@ def create_app(debug: bool = False):
     def reload_logging_config():
         env = Env()
         env.read_env(override=True)
-        logging.root.setLevel(env.log_level('LOG_LEVEL', logging.INFO))
+        log_level = env.log_level('LOG_LEVEL', logging.INFO)
+        logging.root.setLevel(log_level)
+        converter_wrapper.debug = log_level==logging.DEBUG
         return jsonify({'log_level': logging.getLevelName(logging.root.level)})
 
     @app.route('/health')

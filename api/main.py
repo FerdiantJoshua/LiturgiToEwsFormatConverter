@@ -28,7 +28,7 @@ class PostprocessRequest(BaseModel):
 
 
 def create_app(debug: bool = False):
-    converter_wrapper = ConverterWrapper()
+    converter_wrapper = ConverterWrapper(debug)
 
     app = FastAPI(
         title='Liturgi Format Converter API',
@@ -45,7 +45,7 @@ def create_app(debug: bool = False):
     async def convert(input_file: UploadFile = File(...), max_char_per_line: Optional[int] = Form(MAX_CHAR_PER_LINE)):
         logger.debug('Filename: "%s". Max char per line: "%d"', input_file.filename, max_char_per_line)
         input_file.file.filename = input_file.filename
-        conversion_result = converter_wrapper.convert(input_file.file, max_char_per_line, debug)
+        conversion_result = converter_wrapper.convert(input_file.file, max_char_per_line)
 
         response = JSONResponse(
             conversion_result,
@@ -66,7 +66,9 @@ def create_app(debug: bool = False):
     async def reload_logging_config():
         env = Env()
         env.read_env(override=True)
-        logging.root.setLevel(env.log_level('LOG_LEVEL', logging.INFO))
+        log_level = env.log_level('LOG_LEVEL', logging.INFO)
+        logging.root.setLevel(log_level)
+        converter_wrapper.debug = log_level==logging.DEBUG
         return {'log_level': logging.getLevelName(logging.root.level)}
 
     @app.get('/health')

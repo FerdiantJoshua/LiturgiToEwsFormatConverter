@@ -14,16 +14,16 @@ from parse_pdf import MAX_CHAR_PER_LINE, parse_converted_pdf
 logger = logging.getLogger(f'{ROOT_MODULE_NAME}.{__name__}')
 
 class ConverterWrapper:
-    def __init__(self):
-        pass
+    def __init__(self, debug: bool = False):
+        self.debug = debug
 
-    def convert(self, input_file: SpooledTemporaryFile, max_char_per_line: int = MAX_CHAR_PER_LINE, debug: bool = False) -> dict:
+    def convert(self, input_file: SpooledTemporaryFile, max_char_per_line: int = MAX_CHAR_PER_LINE) -> dict:
         result = ''
         input_file.seek(0, io.SEEK_END)
         if input_file.tell() > 0:
             try:
                 converted = extract_text(input_file)
-                result = parse_converted_pdf(converted, int(max_char_per_line), debug)
+                result = parse_converted_pdf(converted, int(max_char_per_line), self.debug)
 
                 msg = f'Successfully convert "{input_file.filename}!"'
                 logger.info(msg)
