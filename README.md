@@ -19,6 +19,18 @@
 
 2. Follow the navigation in the GUI: load a PDF file, convert it, then copy to clipboard
 
+## API Mode
+
+1. Copy `.env.example`, rename it to `.env`
+
+2. Run this command in terminal:
+
+    ```shell script
+    python api_entrypoint.py
+    ```
+
+3. Access the webpage from `http://HOST:PORT`. By default it's [`http://localhost:1234`](http://localhost:1234)
+
 ## CLI Mode
 
 ### Run Script
