@@ -8,7 +8,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
         <title>Liturgi Format Converter</title>
         <link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico">
-        <link rel="stylesheet" href="/static/index.css" />
+        <link rel="stylesheet" type="text/css" href="/static/stylesheet.css" >
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
         <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -18,8 +18,72 @@
     <body>
         <main role="main" class="container">
             <h1 class="mt-5">Liturgi Format Converter</h1>
-            <p class="lead">Pin a fixed-height footer to the bottom of the viewport in desktop browsers with this custom HTML and CSS. A fixed navbar has been added with <code>padding-top: 60px;</code> on the <code>body &gt; .container</code>.</p>
-            <p>Back to <a href="../sticky-footer/">the default sticky footer</a> minus the navbar.</p>
+            <p class="lead">Easily extract text from your liturgi and reformat it be church-presentation-software-ready!</p>
+            <ol>
+                <li>Upload the liturgi file</li>
+                <li>Adjust the maximum characters per line</li>
+                <li>Extract the text and get the formatted result</li>
+                <li>Postprocess to add extra formatting if needed</li>
+            </ol>
+
+            <form action="/convert" method="post" enctype="multipart/form-data" id="form_convert" class="mt-5 mb-3 row">
+                <div class="col-9 mb-3">
+                    <label for="input-file" class="form-label">Liturgi</label>
+                    <input type="file" id="input-file" class="form-control" name="input_file" accept="application/pdf" aria-describedby="input-file-help" required/>
+                    <div id="input-file-help" class="form-text">Choose a liturgi file (.pdf)</div>
+                </div>
+                    
+                <div class="col-3 mb-3">
+                    <label for="max_char_per_line" class="form-label">Maximum Char per Line</label>
+                    <input type="number" id="max_char_per_line" class="form-control" name="max_char_per_line" value="70" aria-describedby="max_char_per_line-help" required>
+                    <div id="max_char_per_line-help" class="form-text">Maximum length of each line</div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="button" id="btn-convert" class="btn btn-primary col-12">Convert PDF</button>
+                </div>
+            </form>
+
+            <div class="mb-5 row">
+                <div class="mb-3 col-12">
+                    <label for="txt-input" class="form-label">Processed Text for EasyWorship</label>
+                    <textarea id="txt-input" class="form-control" rows="20" spellcheck="false"></textarea>
+                    <div id="txt-input-help" class="form-text">Copy this to EasyWorship</div>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                    <button type="button" id="btn-postprocess" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#postprocess_result_modal">Postprocess</button>
+                    <button type="button" id="btn-copy-txt-input" class="btn btn-secondary me-md-2" value="Copy">Copy</button>
+                </div>
+            </div>
+            
+            <!-- Postprocess Result Modal -->
+            <div class="modal fade" id="postprocess_result_modal" tabindex="-1" role="dialog" aria-labelledby="postprocess_result_modal_title" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="postprocess_result_modal_title">Postprocess Result</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body" id="postprocess_result_modal_body">
+                    <textarea id="txt-result" class="form-control" rows="15" spellcheck="false" disabled></textarea>
+                  </div>
+                  <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      <button type="button" id="btn-copy-postprocess-result" class="btn btn-primary" value="Copy">Copy</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Spinner -->
+            <div id="spinner" class="bg-secondary d-none" style="position: fixed; width: 100%; height: 100%; z-index: 2000; top: 0; left: 0; opacity: 0.5; filter: alpha(opacity=50);">
+                <div class="row h-100 justify-content-center align-items-center">
+                <div class="spinner-border" style="width: 12rem; height: 12rem;" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                </div>
+            </div>
         </main>
     </body>
 </html>
