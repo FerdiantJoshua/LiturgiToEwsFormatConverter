@@ -4,7 +4,6 @@ import logging
 from tempfile import SpooledTemporaryFile
 from typing import List, Optional
 
-from fastapi import File
 from pdfminer.high_level import extract_text
 
 from logging_config import ROOT_MODULE_NAME
@@ -18,12 +17,12 @@ class ConverterWrapper:
     def __init__(self):
         pass
 
-    def convert(self, input_file: File, max_char_per_line: int = MAX_CHAR_PER_LINE, debug: bool = False) -> dict:
+    def convert(self, input_file: SpooledTemporaryFile, max_char_per_line: int = MAX_CHAR_PER_LINE, debug: bool = False) -> dict:
         result = ''
-        input_file.file.seek(0, io.SEEK_END)
-        if input_file.file.tell() > 0:
+        input_file.seek(0, io.SEEK_END)
+        if input_file.tell() > 0:
             try:
-                converted = extract_text(input_file.file)
+                converted = extract_text(input_file)
                 result = parse_converted_pdf(converted, int(max_char_per_line), debug)
 
                 msg = f'Successfully convert "{input_file.filename}!"'
