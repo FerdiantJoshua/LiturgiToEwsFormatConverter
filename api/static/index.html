@@ -8,10 +8,13 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
         <title>Liturgi Format Converter</title>
         <link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico">
-        <link rel="stylesheet" type="text/css" href="/static/stylesheet.css" >
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+        <link href="//cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/static/stylesheet.css" >
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
         <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
         <script type="text/javascript" src="/static/index.js"></script>
     </head>
 
@@ -46,14 +49,74 @@
 
             <div class="mb-5 row">
                 <div class="mb-3 col-12">
-                    <label for="txt-input" class="form-label">Processed Text for EasyWorship</label>
-                    <textarea id="txt-input" class="form-control" rows="20" spellcheck="false"></textarea>
-                    <div id="txt-input-help" class="form-text">Copy this to EasyWorship</div>
+                    <label for="editor" class="form-label">Processed Text for EasyWorship</label>
+                    <div class="col">
+                        <div id="toolbar">
+                            <span class="ql-formats">
+                                <button class="ql-header" value="1"></button>
+                                <button class="ql-header" value="2"></button>
+                            </span>
+
+                            <span class="ql-formats">
+                                <button class="ql-bold"></button>
+                                <button class="ql-italic"></button>
+                                <button class="ql-underline"></button>
+                                <!-- <button class="ql-strike"></button> -->
+                            </span>
+                            
+                            <span class="ql-formats">
+                                <button class="ql-indent" value="-1"></button>
+                                <button class="ql-indent" value="+1"></button>
+                            </span>
+
+                            <!-- <span class="ql-formats">
+                                <select class="ql-color">
+                                    <option selected></option>
+                                    <option value="white"></option>
+                                    <option value="red"></option>
+                                    <option value="blue"></option>
+                                    <option value="yellow"></option>
+                                    <option value="green"></option>
+                                    <option value="pink"></option>
+                                    <option value="orange"></option>
+                                    <option value="purple"></option>
+                                </select>
+                            </span> -->
+
+                            <span class="ql-formats">
+                                <button class="ql-script" value="sub"></button>
+                                <button class="ql-script" value="super"></button>
+                            </span>
+
+                            <span class="ql-formats">
+                                <button class="ql-clean"></button>
+                            </span>
+
+                            <span class="ql-formats">
+                                <button id="auto-format-header">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-magic" viewBox="0 0 16 16">
+                                        <path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.621 2.5a.5.5 0 1 0 0-1H4.843a.5.5 0 1 0 0 1h1.829Zm8.485 0a.5.5 0 1 0 0-1h-1.829a.5.5 0 0 0 0 1h1.829ZM13.293 10A.5.5 0 1 0 14 9.293L12.707 8a.5.5 0 1 0-.707.707L13.293 10ZM9.5 11.157a.5.5 0 0 0 1 0V9.328a.5.5 0 0 0-1 0v1.829Zm1.854-5.097a.5.5 0 0 0 0-.706l-.708-.708a.5.5 0 0 0-.707 0L8.646 5.94a.5.5 0 0 0 0 .707l.708.708a.5.5 0 0 0 .707 0l1.293-1.293Zm-3 3a.5.5 0 0 0 0-.706l-.708-.708a.5.5 0 0 0-.707 0L.646 13.94a.5.5 0 0 0 0 .707l.708.708a.5.5 0 0 0 .707 0L8.354 9.06Z"/>
+                                    </svg>
+                                </button>
+                            </span>
+                        </div>
+                        <div id="editor" class="scroll-container">
+                            <p>Hello World!</p>
+                            <p>Some initial <strong>bold</strong> text</p>
+                            <p><br></p>
+                        </div>
+                    </div>
+                    <div id="editor-help" class="form-text">Copy this to EasyWorship</div>
                 </div>
-                
+
                 <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                    <button type="button" id="btn-postprocess" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#postprocess_result_modal">Postprocess</button>
-                    <button type="button" id="btn-copy-txt-input" class="btn btn-secondary me-md-2" value="Copy">Copy</button>
+                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Postprocess</button>
+                    <ul class="dropdown-menu">
+                        <li><button type="button" id="btn-postprocess" class="btn btn-primary dropdown-item" data-bs-toggle="modal" data-bs-target="#postprocess_result_modal">Go!</button></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><div class="checkbox dropdown-item"><label><input type="checkbox" id="checkbox-is-formatted">Is Formatted?</label></div></li>
+                    </ul>
+                    <button type="button" id="btn-copy-editor" class="btn btn-secondary me-md-2" value="Copy">Copy</button>
                 </div>
             </div>
             
@@ -84,6 +147,21 @@
                 </div>
                 </div>
             </div>
+
+            <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                </symbol>
+            </svg>
+
+            <!-- <div class="alert alert-danger alert-dismissible d-flex align-items-center fade show" role="alert">
+                <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+                <div>
+                    Sorry, we are unable to process your request!
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div> -->
+
         </main>
     </body>
 </html>

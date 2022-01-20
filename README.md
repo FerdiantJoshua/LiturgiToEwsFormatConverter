@@ -25,9 +25,17 @@
 
 2. Run this command in terminal:
 
-    ```shell script
-    python api_entrypoint.py
-    ```
+    - Production
+
+        ```shell script
+        python api_entrypoint.py
+        ```
+
+    - Development
+
+        ```shell script
+        uvicorn api_entrypoint:liturgi_format_converter_api --host=0.0.0.0 --port=1234 --reload
+        ```
 
 3. Access the webpage from `http://HOST:PORT`. By default it's [`http://localhost:1234`](http://localhost:1234)
 

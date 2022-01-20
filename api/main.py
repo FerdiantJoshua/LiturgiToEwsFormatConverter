@@ -17,7 +17,7 @@ from .converter_wrapper import ConverterWrapper
 
 logger = logging.getLogger(f'{ROOT_MODULE_NAME}.{__name__}')
 
-class PostprocessRequest(BaseModel):
+class TextRequest(BaseModel):
     text: str
 
     @validator('text')
@@ -25,6 +25,9 @@ class PostprocessRequest(BaseModel):
         if not val:
             raise ValueError('empty string in \'text\' is not an allowed value')
         return val
+
+class PostprocessRequest(TextRequest):
+    is_formatted: bool = False
 
 
 def create_app(debug: bool = False):
@@ -53,9 +56,18 @@ def create_app(debug: bool = False):
         )
         return response
 
+    @app.post('/format-text')
+    async def format_text(request_body: TextRequest):
+        formatted = converter_wrapper.format_text_in_html(request_body.text)
+        response = JSONResponse(
+            formatted,
+            status_code=status.HTTP_200_OK
+        )
+        return response
+
     @app.post('/postprocess')
     async def postprocess(request_body: PostprocessRequest):
-        postprocessed = converter_wrapper.postprocess(request_body.text)
+        postprocessed = converter_wrapper.postprocess(request_body.text, request_body.is_formatted)
         response = JSONResponse(
             postprocessed,
             status_code=status.HTTP_200_OK

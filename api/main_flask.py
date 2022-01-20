@@ -36,10 +36,17 @@ def create_app(debug: bool = False):
         response = jsonify(conversion_result)
         return response
 
+    @app.route('/format-text', methods=['POST'])
+    def format_text():
+        body = request.json
+        formatted = converter_wrapper.format_text_in_html(body.get('text', ''))
+        response = jsonify(formatted)
+        return response
+
     @app.route('/postprocess', methods=['POST'])
     def postprocess():
         body = request.json
-        postprocessed = converter_wrapper.postprocess(body.get('text', ''))
+        postprocessed = converter_wrapper.postprocess(body.get('text', ''), body.get('is_formatted', False))
         response = jsonify(postprocessed)
         return response
 

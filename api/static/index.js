@@ -1,8 +1,19 @@
 $.ajaxSetup({ cache: false });
 $(document).ready(function () {
+    var quill = new Quill('#editor', {
+        modules: {
+            // toolbar: toolbarOptions
+            toolbar: "#toolbar"
+        },
+        placeholder: 'Edit your liturgi here...',
+        theme: 'snow'
+    });
+    quill.root.setAttribute('spellcheck', false)
+    const quillDOM = $(".ql-editor")
+
     const formConvert = $("#form_convert");
-    const txtInput = $("#txt-input");
     const txtResult = $("#txt-result");
+    const checkboxIsFormatted = $("#checkbox-is-formatted");
 
     const spinner = $("#spinner");
 
@@ -21,10 +32,26 @@ $(document).ready(function () {
             processData: false,
             contentType: false
         }).done(function (data) {
-            // We need these 3 lines to support most browsers
-            txtInput.text(data.result);
-            txtInput.html(data.result);
-            txtInput.val(data.result);
+            quill.setText(data.result)
+        }).fail(function (error) {
+            console.log(error)
+        }).always(function () {
+            spinner.addClass('d-none');
+        })
+    });
+
+    $("#auto-format-header").click(function () {
+        spinner.removeClass('d-none');
+        const payload = { "text": quill.getText() };
+        $.ajax({
+            type: "POST",
+            url: "/format-text",
+            data: JSON.stringify(payload),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json"
+        }).done(function (data) {
+            quillDOM[0].innerHTML = data.result;
+            checkboxIsFormatted.prop("checked", true);
         }).fail(function (error) {
             console.log(error)
         }).always(function () {
@@ -34,7 +61,9 @@ $(document).ready(function () {
 
     $("#btn-postprocess").click(function () {
         spinner.removeClass('d-none');
-        const payload = { "text": txtInput.val() };
+        isFormatted = checkboxIsFormatted.is(":checked");
+        text = !isFormatted ? quill.getText() : quillDOM[0].innerHTML;
+        const payload = { "text": text, "is_formatted": isFormatted };
         $.ajax({
             type: "POST",
             url: "/postprocess",
@@ -53,8 +82,8 @@ $(document).ready(function () {
         })
     });
 
-    $("#btn-copy-txt-input").click(function () {
-        navigator.clipboard.writeText(txtInput.val());
+    $("#btn-copy-editor").click(function () {
+        navigator.clipboard.writeText(quill.getText());
     });
 
     $("#btn-copy-postprocess-result").click(function () {
