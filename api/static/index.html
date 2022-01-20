@@ -24,9 +24,11 @@
             <p class="lead">Easily extract text from your liturgi and reformat it be church-presentation-software-ready!</p>
             <ol>
                 <li>Upload the liturgi file</li>
-                <li>Adjust the maximum characters per line</li>
+                <li>Adjust the line length limit</li>
                 <li>Extract the text and get the formatted result</li>
-                <li>Postprocess to add extra formatting if needed</li>
+                <li>Edit the result as there will be some inaccuracies</li>
+                <li>Use the auto formatter (<i class="bi bi-magic"></i>) to assist you to create format headers <sub><em>(optional)</em></sub></li>
+                <li>Postprocess to other format <sub><em>(optional)</em></sub></li>
             </ol>
 
             <form action="/convert" method="post" enctype="multipart/form-data" id="form_convert" class="mt-5 mb-3 row">
@@ -37,9 +39,9 @@
                 </div>
                     
                 <div class="col-12 col-md-6 col-lg-3 mb-3">
-                    <label for="max_char_per_line" class="form-label">Maximum Char per Line</label>
+                    <label for="max_char_per_line" class="form-label">Line Length Limit (in characters)</label>
                     <input type="number" id="max_char_per_line" class="form-control" name="max_char_per_line" value="70" aria-describedby="max_char_per_line-help" required>
-                    <div id="max_char_per_line-help" class="form-text">Maximum length of each line</div>
+                    <div id="max_char_per_line-help" class="form-text">Some lines may be longer than this limit as sentences are cut on punctuations</div>
                 </div>
 
                 <div class="d-grid gap-2">
@@ -53,6 +55,17 @@
                     <div class="col">
                         <div id="toolbar">
                             <span class="ql-formats">
+                                <button id="btn-editor-download">
+                                    <i class="bi bi-download"></i>
+                                </button>
+                                <a id="input-editor-download" class="d-none" href="data:application/xml;charset=utf-8," download="liturgi-content.html">Save</a>
+                                <button id="btn-editor-upload">
+                                    <i class="bi bi-upload"></i>
+                                </button>
+                                <input type="file" id="input-editor-upload" class="d-none"/>
+                            </span>
+
+                            <span class="ql-formats">
                                 <button class="ql-header" value="1"></button>
                                 <button class="ql-header" value="2"></button>
                             </span>
@@ -61,7 +74,6 @@
                                 <button class="ql-bold"></button>
                                 <button class="ql-italic"></button>
                                 <button class="ql-underline"></button>
-                                <!-- <button class="ql-strike"></button> -->
                             </span>
                             
                             <span class="ql-formats">
@@ -69,7 +81,7 @@
                                 <button class="ql-indent" value="+1"></button>
                             </span>
 
-                            <!-- <span class="ql-formats">
+                            <span class="ql-formats">
                                 <select class="ql-color">
                                     <option selected></option>
                                     <option value="white"></option>
@@ -81,7 +93,7 @@
                                     <option value="orange"></option>
                                     <option value="purple"></option>
                                 </select>
-                            </span> -->
+                            </span>
 
                             <span class="ql-formats">
                                 <button class="ql-script" value="sub"></button>
@@ -94,9 +106,7 @@
 
                             <span class="ql-formats">
                                 <button id="auto-format-header">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-magic" viewBox="0 0 16 16">
-                                        <path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.621 2.5a.5.5 0 1 0 0-1H4.843a.5.5 0 1 0 0 1h1.829Zm8.485 0a.5.5 0 1 0 0-1h-1.829a.5.5 0 0 0 0 1h1.829ZM13.293 10A.5.5 0 1 0 14 9.293L12.707 8a.5.5 0 1 0-.707.707L13.293 10ZM9.5 11.157a.5.5 0 0 0 1 0V9.328a.5.5 0 0 0-1 0v1.829Zm1.854-5.097a.5.5 0 0 0 0-.706l-.708-.708a.5.5 0 0 0-.707 0L8.646 5.94a.5.5 0 0 0 0 .707l.708.708a.5.5 0 0 0 .707 0l1.293-1.293Zm-3 3a.5.5 0 0 0 0-.706l-.708-.708a.5.5 0 0 0-.707 0L.646 13.94a.5.5 0 0 0 0 .707l.708.708a.5.5 0 0 0 .707 0L8.354 9.06Z"/>
-                                    </svg>
+                                    <i class="bi bi-magic"></i>
                                 </button>
                             </span>
                         </div>

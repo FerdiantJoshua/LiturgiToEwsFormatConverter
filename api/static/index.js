@@ -1,15 +1,39 @@
+const quillDOMId = ".ql-editor";
+
+function handleFileSelect (e) {
+    var files = e.target.files;
+    if (files.length < 1) {
+        alert('select a file...');
+        return;
+    }
+    var file = files[0];
+    var reader = new FileReader();
+    reader.onload = onFileLoaded;
+    reader.readAsText(file);
+}
+function onFileLoaded (e) {
+    $(quillDOMId)[0].innerHTML = e.target.result;
+}
+
 $.ajaxSetup({ cache: false });
 $(document).ready(function () {
     var quill = new Quill('#editor', {
         modules: {
             // toolbar: toolbarOptions
-            toolbar: "#toolbar"
+            toolbar: "#toolbar",
+            keyboard: {
+                bindings: {
+                  'list autofill': {
+                    prefix: /^\s*()$/
+                  }
+                }
+            }
         },
         placeholder: 'Edit your liturgi here...',
         theme: 'snow'
     });
     quill.root.setAttribute('spellcheck', false)
-    const quillDOM = $(".ql-editor")
+    const quillDOM = $(quillDOMId);
 
     const formConvert = $("#form_convert");
     const txtResult = $("#txt-result");
@@ -60,6 +84,7 @@ $(document).ready(function () {
     });
 
     $("#btn-postprocess").click(function () {
+        txtResult.text("");
         spinner.removeClass('d-none');
         isFormatted = checkboxIsFormatted.is(":checked");
         text = !isFormatted ? quill.getText() : quillDOM[0].innerHTML;
@@ -71,10 +96,7 @@ $(document).ready(function () {
             contentType: "application/json; charset=utf-8",
             dataType: "json"
         }).done(function (data) {
-            // We need these 3 lines to support most browsers
             txtResult.text(data.result);
-            txtResult.html(data.result);
-            txtResult.val(data.result);
         }).fail(function (error) {
             console.log(error)
         }).always(function () {
@@ -82,11 +104,23 @@ $(document).ready(function () {
         })
     });
 
+    // COPY BUTTONS
     $("#btn-copy-editor").click(function () {
         navigator.clipboard.writeText(quill.getText());
     });
-
     $("#btn-copy-postprocess-result").click(function () {
         navigator.clipboard.writeText(txtResult.val());
     });
+
+    // DOWNLOAD & UPLOAD TOOLBAR BUTTONS
+    const inputEditorDownload = $("#input-editor-download");
+    const inputEditorUpload = $("#input-editor-upload");
+
+    const downloadDataPrefix = "data:application/xml;charset=utf-8,"
+    $("#btn-editor-download").click(function () {
+        inputEditorDownload.attr("href", downloadDataPrefix + quillDOM[0].innerHTML);
+        inputEditorDownload[0].click();
+    });
+    $("#btn-editor-upload").click((e) => inputEditorUpload.click());
+    inputEditorUpload.change(handleFileSelect);
 });

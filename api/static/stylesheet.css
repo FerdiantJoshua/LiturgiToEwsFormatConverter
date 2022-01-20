@@ -1,5 +1,5 @@
 @media(max-width:768px) {
-    #btn-copy-txt-input, #btn-copy-postprocess-result {
+    #btn-copy-editor, #btn-copy-postprocess-result {
         display: none;
     }
 }
