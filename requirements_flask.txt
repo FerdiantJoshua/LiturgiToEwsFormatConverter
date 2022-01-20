@@ -1,8 +1,11 @@
+beautifulsoup4==4.10.0
+bs4==0.0.1
 environs==9.4.0
 flask==2.0.2
 itsdangerous==2.0.1
 Jinja2==3.0.3
 MarkupSafe==2.0.1
 pdfminer.six==20200726
+soupsieve==2.3.1
 Unidecode==1.1.1
 Werkzeug==2.0.2

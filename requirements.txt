@@ -1,5 +1,7 @@
 asgiref==3.4.1
 anyio==3.5.0
+beautifulsoup4==4.10.0
+bs4==0.0.1
 environs==9.4.0
 fastapi==0.71.0
 gunicorn==20.1.0
@@ -9,6 +11,7 @@ marshmallow==3.14.1
 pdfminer.six==20200726
 pydantic==1.9.0
 python-multipart==0.0.5
+soupsieve==2.3.1
 starlette==0.17.1
 typing-extensions==4.0.1
 Unidecode==1.1.1
