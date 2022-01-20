@@ -21,6 +21,17 @@ DEFAULT_HTML_TAGS_MAPPING = {
     'sub': 'sb',
     'strong': 'st'
 }
+DEFAULT_COLOR_TO_EL_NAME_MAPPING = {
+    'white': 'w',
+    'red': 'r',
+    'blue': 'bl',
+    'yellow': 'y',
+    'green': 'g',
+    'pink': 'pk',
+    'orange': 'o',
+    'purple': 'pp'
+}
+COLOR_CSS_ATTR_NAME = 'color: '
 
 def postprocess_text(text: str, additional_separator: str = DEFAULT_ADDITIONAL_SEPARATOR, slide_header_tag: str = DEFAULT_SLIDE_HEADER_TAG) -> str:
     lines = text.split('\n')
@@ -48,6 +59,8 @@ def postprocess_text(text: str, additional_separator: str = DEFAULT_ADDITIONAL_S
 
 def format_text_in_html(text: str) -> str:
     lines = text.split('\n')
+    if lines[-1] == '':
+        lines = lines[:-1]
 
     for i in range(len(lines)):
         if lines[i] == '':
@@ -62,7 +75,6 @@ def format_text_in_html(text: str) -> str:
 
         if not match_object:
             match_object = re.fullmatch(cong_inst_regex, lines[i])
-            print(match_object)
             if match_object:
                 congregation_instruction = _format_text(match_object.group(1), 'h2', in_html=True)
                 lines[i] = congregation_instruction
@@ -107,6 +119,14 @@ def _convert_format_from_html(text: str, slide_header_tag: str) -> [str]:
         elements = html_objects.find_all(tag)
         for element in elements:
             element.name = replacement
+
+    spans = html_objects.find_all('span')
+    for span in spans:
+        span_style = span.get('style')
+        if isinstance(span_style, str) and span_style.startswith(COLOR_CSS_ATTR_NAME):
+            color = span_style[len(COLOR_CSS_ATTR_NAME):-1]
+            span.name = DEFAULT_COLOR_TO_EL_NAME_MAPPING[color]
+            del span['style']
 
     for tag in html_objects.contents:
         content = str(tag) if tag.name != 'p' else ''.join(str(s) for s in tag)
