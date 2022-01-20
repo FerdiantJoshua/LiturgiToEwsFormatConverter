@@ -121,6 +121,9 @@ $(document).ready(function () {
         inputEditorDownload.attr("href", downloadDataPrefix + quillDOM[0].innerHTML);
         inputEditorDownload[0].click();
     });
-    $("#btn-editor-upload").click((e) => inputEditorUpload.click());
+    $("#btn-editor-upload").click(function () {
+        checkboxIsFormatted.prop("checked", true);
+        inputEditorUpload.click();
+    });
     inputEditorUpload.change(handleFileSelect);
 });
