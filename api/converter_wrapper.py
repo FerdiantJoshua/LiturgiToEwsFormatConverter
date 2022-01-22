@@ -30,6 +30,7 @@ class ConverterWrapper:
             except Exception as err:
                 msg = f'Unable to convert "{input_file.filename}"!'
                 logger.exception(msg)
+                raise err
 
         result = {'result': result}
         return result
@@ -43,6 +44,7 @@ class ConverterWrapper:
         except Exception as err:
             msg = f'Unable to format!'
             logger.exception(msg)
+            raise err
 
         result = {'result': result}
         return result
@@ -56,6 +58,7 @@ class ConverterWrapper:
         except Exception as err:
             msg = f'Unable to postprocess! (is_formatted = {is_formatted})'
             logger.exception(msg)
+            raise err
 
         result = {'result': result}
         return result
