@@ -8,3 +8,9 @@
     overflow: auto;
     height: 400px;
 }
+
+.disappearing-alert {
+    position: sticky;
+    top: 4vh;
+    z-index:99;
+}

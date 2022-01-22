@@ -15,6 +15,16 @@ function onFileLoaded (e) {
     $(quillDOMId)[0].innerHTML = e.target.result;
 }
 
+function handleAjaxError(jqXHR, textStatus, errorThrown) {
+    console.log("textStatus", textStatus, "; errorThrown: ", errorThrown, "; jqXHR: ", jqXHR);
+    errorThrown = errorThrown == "timeout" ? "Timeout error" : error
+    $("#error-detail").html(errorThrown);
+    $(".disappearing-alert").removeClass("d-none");
+    setTimeout(() => {
+        $(".disappearing-alert").addClass("d-none");
+    }, 5000);
+}
+
 $.ajaxSetup({ cache: false });
 $(document).ready(function () {
     var quill = new Quill('#editor', {
@@ -46,19 +56,20 @@ $(document).ready(function () {
             return;
         }
 
-        spinner.removeClass('d-none');
+        spinner.removeClass("d-none");
         const payload = new FormData(formConvert[0]);
         $.ajax({
             type: "POST",
             url: "/convert",
             data: payload,
+            timeout: 30000,
             enctype: "multipart/form-data",
             processData: false,
-            contentType: false
-        }).done(function (data) {
-            quill.setText(data.result)
-        }).fail(function (error) {
-            console.log(error)
+            contentType: false,
+            success: function (data) {
+                quill.setText(data.result);
+            },
+            error: handleAjaxError
         }).always(function () {
             spinner.addClass('d-none');
         })
@@ -71,13 +82,14 @@ $(document).ready(function () {
             type: "POST",
             url: "/format-text",
             data: JSON.stringify(payload),
+            timeout: 7000,
             contentType: "application/json; charset=utf-8",
-            dataType: "json"
-        }).done(function (data) {
-            quillDOM[0].innerHTML = data.result;
-            checkboxIsFormatted.prop("checked", true);
-        }).fail(function (error) {
-            console.log(error)
+            dataType: "json",
+            success: function (data) {
+                quillDOM[0].innerHTML = data.result;
+                checkboxIsFormatted.prop("checked", true);
+            },
+            error: handleAjaxError
         }).always(function () {
             spinner.addClass('d-none');
         })
@@ -93,12 +105,13 @@ $(document).ready(function () {
             type: "POST",
             url: "/postprocess",
             data: JSON.stringify(payload),
+            timeout: 7000,
             contentType: "application/json; charset=utf-8",
-            dataType: "json"
-        }).done(function (data) {
-            txtResult.text(data.result);
-        }).fail(function (error) {
-            console.log(error)
+            dataType: "json",
+            success: function (data) {
+                txtResult.text(data.result);
+            },
+            error: handleAjaxError
         }).always(function () {
             spinner.addClass('d-none');
         })
