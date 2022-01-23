@@ -17,7 +17,8 @@ function onFileLoaded (e) {
 
 function handleAjaxError(jqXHR, textStatus, errorThrown) {
     console.log("textStatus", textStatus, "; errorThrown: ", errorThrown, "; jqXHR: ", jqXHR);
-    errorThrown = errorThrown == "timeout" ? "Timeout error" : error
+    const errorStatus = jqXHR.status;
+    errorThrown = errorThrown == "timeout" ? "Timeout error" : errorStatus + " - " + errorThrown
     $("#error-detail").html(errorThrown);
     $(".disappearing-alert").removeClass("d-none");
     setTimeout(() => {

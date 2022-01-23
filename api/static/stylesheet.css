@@ -10,7 +10,9 @@
 }
 
 .disappearing-alert {
-    position: sticky;
+    position: fixed;
     top: 4vh;
+    width: inherit;
+    max-width: inherit;
     z-index:99;
 }
