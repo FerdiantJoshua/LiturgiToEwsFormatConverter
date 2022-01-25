@@ -1,7 +1,7 @@
 import html
 import re
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 from parse_pdf import heading_1_regex_opts, heading_2_regex, heading_3_regex, cong_inst_regex
 
@@ -21,7 +21,7 @@ DEFAULT_HTML_TAGS_MAPPING = {
     'sub': 'sb',
     'strong': 'st'
 }
-DEFAULT_COLOR_TO_EL_NAME_MAPPING = {
+COLOR_TO_EL_NAME_MAPPING = {
     'white': 'w',
     'red': 'r',
     'blue': 'bl',
@@ -32,6 +32,12 @@ DEFAULT_COLOR_TO_EL_NAME_MAPPING = {
     'purple': 'pp'
 }
 COLOR_CSS_ATTR_NAME = 'color: '
+
+FONT_SIZE_ATTR_PREFIX = 'ql-size-'
+FONT_SIZE_TO_EL_NAME_MAPPING = {
+    'small': 'sm',
+    'large': 'lg'
+}
 
 def postprocess_text(text: str, additional_separator: str = DEFAULT_ADDITIONAL_SEPARATOR, slide_header_tag: str = DEFAULT_SLIDE_HEADER_TAG) -> str:
     lines = text.split('\n')
@@ -114,21 +120,30 @@ def _convert_format_from_html(text: str, slide_header_tag: str) -> [str]:
 
     result = []
 
-    html_objects = BeautifulSoup(text, 'html.parser')
+    soup = BeautifulSoup(text, 'html.parser')
     for tag, replacement in html_tags_mapping.items():
-        elements = html_objects.find_all(tag)
+        elements = soup.find_all(tag)
         for element in elements:
-            element.name = replacement
+            el_style = element.get('style')
+            el_class = element.get('class')
+            if el_style is None and el_class is None:
+                element.name = replacement
+            else:
+                if el_style is not None:
+                    span_style = soup.new_tag('span', attrs={'style':el_style})
+                    element.wrap(span_style)
+                if el_class is not None:
+                    span_class = soup.new_tag('span', attrs={'class':el_class})
+                    element.wrap(span_class)
+                element.wrap(soup.new_tag(replacement))
+                element.unwrap()
 
-    spans = html_objects.find_all('span')
+    spans = soup.find_all('span')
     for span in spans:
-        span_style = span.get('style')
-        if isinstance(span_style, str) and span_style.startswith(COLOR_CSS_ATTR_NAME):
-            color = span_style[len(COLOR_CSS_ATTR_NAME):-1]
-            span.name = DEFAULT_COLOR_TO_EL_NAME_MAPPING[color]
-            del span['style']
+        _convert_html_color_style(span)
+        _convert_html_font_size_class(span)
 
-    for tag in html_objects.contents:
+    for tag in soup.contents:
         content = str(tag) if tag.name != 'p' else ''.join(str(s) for s in tag)
         content = re.sub(html_br_tag, '', content)
         mapping_table = content.maketrans('<>', '{}')
@@ -136,6 +151,22 @@ def _convert_format_from_html(text: str, slide_header_tag: str) -> [str]:
         result.extend(html.unescape(converted).split('\n\n'))
 
     return result
+
+def _convert_html_color_style(tag: Tag):
+    tag_style = tag.get('style')
+    if isinstance(tag_style, str):
+        if tag_style.startswith(COLOR_CSS_ATTR_NAME):
+            color = tag_style[len(COLOR_CSS_ATTR_NAME):-1]
+            tag.name = COLOR_TO_EL_NAME_MAPPING[color]
+        del tag['style']
+
+def _convert_html_font_size_class(tag: Tag):
+    tag_class = tag.get('class')
+    if isinstance(tag_class, list) and len(tag_class) > 0:
+        if tag_class[0].startswith(FONT_SIZE_ATTR_PREFIX):
+            size = tag_class[0][len(FONT_SIZE_ATTR_PREFIX):]
+            tag.name = FONT_SIZE_TO_EL_NAME_MAPPING[size]
+        del tag['class']
 
 def _format_text(text:str, tag:str, in_html: bool = False) -> str:
     if not in_html:
