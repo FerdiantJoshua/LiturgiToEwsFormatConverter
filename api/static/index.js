@@ -43,6 +43,20 @@ $(document).ready(function () {
         placeholder: 'Edit your liturgi here...',
         theme: 'snow'
     });
+    quill.keyboard.addBinding({
+        key: 'S',
+        ctrlKey: true,
+        handler: function(range, context) {
+            $("#btn-editor-download").click();
+        }
+    });
+    quill.keyboard.addBinding({
+        key: 'O',
+        ctrlKey: true,
+        handler: function(range, context) {
+            $("#btn-editor-upload").click();
+        }
+    });
     quill.root.setAttribute('spellcheck', false)
     const quillDOM = $(quillDOMId);
 
