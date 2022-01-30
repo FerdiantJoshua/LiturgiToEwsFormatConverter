@@ -17,6 +17,7 @@ DEFAULT_HTML_TAGS_MAPPING = {
     'h1': DEFAULT_SLIDE_HEADER_TAG,
     'h2': DEFAULT_CONGREGATION_INSTRUCTION_TAG,
     'em': 'it',
+    'u': 'u',
     'sup': 'su',
     'sub': 'sb',
     'strong': 'st'
