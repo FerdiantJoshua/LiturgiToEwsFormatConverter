@@ -124,7 +124,7 @@ $(document).ready(function () {
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function (data) {
-                txtResult.text(data.result);
+                txtResult.val(data.result);
             },
             error: handleAjaxError
         }).always(function () {
