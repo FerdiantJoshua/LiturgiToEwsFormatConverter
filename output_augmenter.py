@@ -20,7 +20,8 @@ DEFAULT_HTML_TAGS_MAPPING = {
     'u': 'u',
     'sup': 'su',
     'sub': 'sb',
-    'strong': 'st'
+    'strong': 'st',
+    'span': 'span'
 }
 COLOR_TO_EL_NAME_MAPPING = {
     'white': 'w',
@@ -136,7 +137,8 @@ def _convert_format_from_html(text: str, slide_header_tag: str) -> [str]:
                 if el_class is not None:
                     span_class = soup.new_tag('span', attrs={'class':el_class})
                     element.wrap(span_class)
-                element.wrap(soup.new_tag(replacement))
+                if element.name != 'span':  # span maps to itself, so we shouldn't re-wrap it
+                    element.wrap(soup.new_tag(replacement))
                 element.unwrap()
 
     spans = soup.find_all('span')
