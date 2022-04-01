@@ -97,9 +97,14 @@ def postprocess_formatted_text(text: str, additional_separator: str = DEFAULT_AD
     current_formatted_slide_header = _format_text(DEFAULT_SLIDE_HEADER, slide_header_tag)
     prev_line_is_separator = True
     current_line_is_header = False
-    for i in range(len(lines)):
+    i = 0
+    while i < len(lines):
         if lines[i] == '':
-            lines[i] = additional_separator
+            # to prevent consecutive slide separators
+            if prev_line_is_separator:
+                lines[i].pop()
+            else:
+                lines[i] = additional_separator
             prev_line_is_separator = True
             continue
 
@@ -111,6 +116,7 @@ def postprocess_formatted_text(text: str, additional_separator: str = DEFAULT_AD
             if not current_line_is_header:
                 lines[i] = f'{current_formatted_slide_header}\n{lines[i]}'
             prev_line_is_separator = False
+        i += 1
     
     return '\n'.join(lines)
 
@@ -169,6 +175,8 @@ def _convert_html_font_size_class(tag: Tag):
         if tag_class[0].startswith(FONT_SIZE_ATTR_PREFIX):
             size = tag_class[0][len(FONT_SIZE_ATTR_PREFIX):]
             tag.name = FONT_SIZE_TO_EL_NAME_MAPPING[size]
+        elif tag_class[0] == 'ql-cursor': # sometimes new <span class="ql-cursor"></span> is inserted randomly depends on cursor location
+            tag.extract()
         del tag['class']
 
 def _format_text(text:str, tag:str, in_html: bool = False) -> str:
