@@ -16,3 +16,17 @@
     max-width: inherit;
     z-index:2000;
 }
+
+/* Custom formatting for line-height option in toolbar */
+.ql-toolbar.ql-snow .ql-formats .ql-picker.ql-lineheight {
+    width: 58px;
+}  
+.ql-toolbar.ql-snow .ql-formats .ql-lineheight.ql-picker .ql-picker-options .ql-picker-item[data-value='0.8']::before {content: '0.8';}
+.ql-toolbar.ql-snow .ql-formats .ql-lineheight.ql-picker .ql-picker-options .ql-picker-label[data-value='0.8']::before {content: '0.8' !important;}
+.ql-toolbar.ql-snow .ql-formats .ql-lineheight.ql-picker .ql-picker-options .ql-picker-item[data-value='1.0']::before {content: '1.0';}
+.ql-toolbar.ql-snow .ql-formats .ql-lineheight.ql-picker .ql-picker-options .ql-picker-label[data-value='1.0']::before {content: '1.0' !important;}
+.ql-toolbar.ql-snow .ql-formats .ql-lineheight.ql-picker .ql-picker-options .ql-picker-item[data-value='1.2']::before {content: '1.2';}
+.ql-toolbar.ql-snow .ql-formats .ql-lineheight.ql-picker .ql-picker-options .ql-picker-label[data-value='1.2']::before {content: '1.2' !important;}
+.ql-toolbar.ql-snow .ql-formats .ql-lineheight.ql-picker .ql-picker-options .ql-picker-item[data-value='3.0']::before {content: '3.0';}
+.ql-toolbar.ql-snow .ql-formats .ql-lineheight.ql-picker .ql-picker-options .ql-picker-label[data-value='3.0']::before {content: '3.0' !important;}
+/* END OF CUSTOM FORMATTING FOR line-height */

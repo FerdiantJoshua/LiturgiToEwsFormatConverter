@@ -1,5 +1,17 @@
 const quillDOMId = ".ql-editor";
 
+// Enable line-height option in toolbar (ref: https://github.com/quilljs/quill/issues/197)
+var Parchment = Quill.import('parchment');
+var lineHeightConfig = {
+    scope: Parchment.Scope.INLINE,
+    whitelist: ['0.8', '1.0', '1.2', '3.0']
+};
+var lineHeightClass = new Parchment.Attributor.Class('lineheight', 'ql-line-height', lineHeightConfig);
+var lineHeightStyle = new Parchment.Attributor.Style('lineheight', 'line-height', lineHeightConfig);
+Parchment.register(lineHeightClass);
+Parchment.register(lineHeightStyle);
+// END OF ENABLING line-height option in toolbar
+
 function handleFileSelect (e) {
     var files = e.target.files;
     if (files.length < 1) {
