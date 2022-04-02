@@ -99,12 +99,14 @@ def postprocess_formatted_text(text: str, additional_separator: str = DEFAULT_AD
     current_line_is_header = False
     i = 0
     while i < len(lines):
+        # slide separator handler
         if lines[i] == '':
             # to prevent consecutive slide separators
             if prev_line_is_separator:
-                lines[i].pop()
+                lines.pop(i)
             else:
                 lines[i] = additional_separator
+                i += 1
             prev_line_is_separator = True
             continue
 
