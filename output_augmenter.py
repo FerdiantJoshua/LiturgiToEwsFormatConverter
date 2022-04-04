@@ -134,18 +134,18 @@ def _convert_format_from_html(text: str, slide_header_tag: str) -> [str]:
     for tag, replacement in html_tags_mapping.items():
         elements = soup.find_all(tag)
         for element in elements:
-            el_style = element.get('style')
             el_class = element.get('class')
-            if el_style is None and el_class is None:
+            el_style = element.get('style')
+            if el_class is None and el_style is None:
                 element.name = replacement
             else:
-                if el_style is not None:
-                    span_style = soup.new_tag('span', attrs={'style':el_style})
-                    element.wrap(span_style)
-                if el_class is not None:
+                if el_class is not None:  # USED BY: font size (small, normal, large)
                     span_class = soup.new_tag('span', attrs={'class':el_class})
                     element.wrap(span_class)
-                if element.name != 'span':  # span maps to itself, so we shouldn't re-wrap it
+                if el_style is not None:  # USED BY: font color (blue, pink, rgb(x,y,z))
+                    span_style = soup.new_tag('span', attrs={'style':el_style})
+                    element.wrap(span_style)
+                if element.name != 'span':  # span maps to itself, so we shouldn't re-wrap it. USED AS: defensive code to prevent error
                     element.wrap(soup.new_tag(replacement))
                 element.unwrap()
 
