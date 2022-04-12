@@ -123,7 +123,7 @@ $(document).ready(function () {
     });
 
     $("#btn-postprocess").click(function () {
-        txtResult.text("");
+        txtResult.val("");
         spinner.removeClass('d-none');
         isFormatted = checkboxIsFormatted.is(":checked");
         text = !isFormatted ? quill.getText() : quillDOM[0].innerHTML;
