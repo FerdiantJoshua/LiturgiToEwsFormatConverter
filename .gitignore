@@ -4,6 +4,10 @@
 
 log/
 
+api/static/*.ico
+api/static/*.jpg
+api/static/*.png
+
 **/*.txt
 **/*.pdf
 !**/*.example*.*
