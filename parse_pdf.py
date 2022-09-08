@@ -12,7 +12,7 @@ from logging_config import ROOT_MODULE_NAME, LOGGING_CONFIG, LOG_LEVEL
 
 
 date_regex = re.compile(r'[A-Z]{4,6},\s+\d{1,2}\s+[A-Z]{3,10}\s+\d{4}')
-footer_regex = re.compile(r'^Liturgi (?:[A-Z][a-zA-Z,_]+\s+)+\d{1,2}\s+\w+\s+20\d\d')
+footer_regex = re.compile(r'^(?:(?:Tata)|(?:Liturgi)) (?:[A-Z][a-zA-Z,_]+\s+)+\d{1,2}\s+\w+\s+20\d\d(?: - GKI Jl. Maulana Yusuf)?\s*\|\s*\d+')
 _heading_1_regex_1 = re.compile(r'[IVX0-9]{1,5}\.\s+([A-Z ]{5,30})')
 _heading_1_regex_2 = re.compile(r'[IVX0-9]{1,5}\.\s+([A-Za-z ]{5,30})')
 heading_1_regex_opts = [_heading_1_regex_1, _heading_1_regex_2]
@@ -168,7 +168,7 @@ def parse_converted_pdf(texts: str, max_char_per_line: int = MAX_CHAR_PER_LINE, 
                     line['meta'].append(META['SONG'])
 
                 # ========== CONVERSATION START (SOMETIMES GET CUT) ==========
-                if 'song' not in line['meta'] and 'body' in line['meta'] and len(line['meta']) == 1:
+                if META['SONG'] not in line['meta'] and META['BODY'] in line['meta'] and len(line['meta']) == 1:
                     if re.match(conv_start_regex, text):
                         line['meta'].append(META['CONV_START'])
                     elif re.fullmatch(cut_conv_start_name_regex, text):
@@ -234,6 +234,9 @@ if __name__ == '__main__':
             logger.info(f'Skipping {file} as it is not a pdf file.')
             skipped_count += 1
     logger.info(
-        f'\nSummary:\n\tSuccessful conversion(s):\t{success_count}\n\tFailed conversion(s):\t\t{error_count}\n\tSkipped conversion(s):\t\t{skipped_count}'
+        f'\nSummary:\
+            \n\tSuccessful conversion(s):\t{success_count}\
+            \n\tFailed conversion(s):\t\t{error_count}\
+            \n\tSkipped conversion(s):\t\t{skipped_count}'
     )
     logger.debug('<<<<<<<<<<<<<<<<<<<< END OF LOG >>>>>>>>>>>>>>>>>>>>\n')

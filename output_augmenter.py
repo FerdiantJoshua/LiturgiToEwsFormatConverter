@@ -46,9 +46,16 @@ def postprocess_text(text: str, additional_separator: str = DEFAULT_ADDITIONAL_S
 
     current_slide_header = DEFAULT_SLIDE_HEADER
     prev_line_is_separator = True
-    for i in range(len(lines)):
+    i = 0
+    while i < len(lines):
+        # slide separator handler
         if lines[i] == '':
-            lines[i] = additional_separator
+            # remove consecutive slide separators
+            if prev_line_is_separator:
+                lines.pop(i)
+            else:
+                lines[i] = additional_separator
+                i += 1
             prev_line_is_separator = True
             continue
 
@@ -62,6 +69,7 @@ def postprocess_text(text: str, additional_separator: str = DEFAULT_ADDITIONAL_S
             formatted_slide_header = _format_text(current_slide_header, slide_header_tag)
             lines[i] = f'{formatted_slide_header}' if match_object else f'{formatted_slide_header}\n{lines[i]}'
             prev_line_is_separator = False
+        i += 1
     
     return '\n'.join(lines)
 
@@ -101,7 +109,7 @@ def postprocess_formatted_text(text: str, additional_separator: str = DEFAULT_AD
     while i < len(lines):
         # slide separator handler
         if lines[i] == '':
-            # to prevent consecutive slide separators
+            # remove consecutive slide separators
             if prev_line_is_separator:
                 lines.pop(i)
             else:
@@ -110,10 +118,12 @@ def postprocess_formatted_text(text: str, additional_separator: str = DEFAULT_AD
             prev_line_is_separator = True
             continue
 
+        # set current active slide_header
         current_line_is_header = lines[i].startswith(f'{{{slide_header_tag}}}')
         if current_line_is_header:
             current_formatted_slide_header = lines[i]
 
+        # insert slide_header to every slides
         if prev_line_is_separator:
             if not current_line_is_header:
                 lines[i] = f'{current_formatted_slide_header}\n{lines[i]}'
