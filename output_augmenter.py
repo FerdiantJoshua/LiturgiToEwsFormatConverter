@@ -149,13 +149,13 @@ def _convert_format_from_html(text: str, slide_header_tag: str) -> [str]:
             if el_class is None and el_style is None:
                 element.name = replacement
             else:
-                if el_class is not None and FONT_SIZE_TO_EL_NAME_MAPPING.get(el_class) is not None:  # USED BY: font size (small, normal, large)
+                if el_class is not None:  # USED BY: font size (small, normal, large)
                     span_class = soup.new_tag('span', attrs={'class':el_class})
                     element.wrap(span_class)
-                if el_style is not None and COLOR_TO_EL_NAME_MAPPING.get(el_style) is not None:  # USED BY: font color (blue, pink, rgb(x,y,z))
+                if el_style is not None:  # USED BY: font color (blue, pink, rgb(x,y,z))
                     span_style = soup.new_tag('span', attrs={'style':el_style})
                     element.wrap(span_style)
-                if element.name != 'span':  # span maps to itself, so we shouldn't re-wrap it. USED AS: defensive code to prevent error
+                if element.name != 'span':  # re-wrap all elements except span, as span maps to itself
                     element.wrap(soup.new_tag(replacement))
                 element.unwrap()
 
@@ -178,7 +178,11 @@ def _convert_html_color_style(tag: Tag):
     if isinstance(tag_style, str):
         if tag_style.startswith(COLOR_CSS_ATTR_NAME):
             color = tag_style[len(COLOR_CSS_ATTR_NAME):-1]
-            tag.name = COLOR_TO_EL_NAME_MAPPING[color]
+            tag_name = COLOR_TO_EL_NAME_MAPPING.get(color)
+            if tag_name is None:  # invalid style: extract the content and remove the span tag 
+                tag.unwrap()
+            else:
+                tag.name = tag_name
         del tag['style']
 
 def _convert_html_font_size_class(tag: Tag):
@@ -186,8 +190,12 @@ def _convert_html_font_size_class(tag: Tag):
     if isinstance(tag_class, list) and len(tag_class) > 0:
         if tag_class[0].startswith(FONT_SIZE_ATTR_PREFIX):
             size = tag_class[0][len(FONT_SIZE_ATTR_PREFIX):]
-            tag.name = FONT_SIZE_TO_EL_NAME_MAPPING[size]
-        elif tag_class[0] == 'ql-cursor': # sometimes new <span class="ql-cursor"></span> is inserted randomly depends on cursor location
+            tag_name = FONT_SIZE_TO_EL_NAME_MAPPING.get(size)
+            if tag_name is None:  # invalid class: extract the content and remove the span tag 
+                tag.unwrap()
+            else:
+                tag.name = tag_name
+        elif tag_class[0] == 'ql-cursor':  # sometimes new <span class="ql-cursor"></span> is inserted randomly depends on cursor location
             tag.extract()
         del tag['class']
 
