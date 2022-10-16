@@ -39,13 +39,13 @@ function popUpCopiedInfo() {
 }
 
 function handleAjaxError(jqXHR, textStatus, errorThrown) {
-    console.log("textStatus", textStatus, "; errorThrown: ", errorThrown, "; jqXHR: ", jqXHR);
+    console.log(`textStatus ${textStatus}; errorThrown: ${errorThrown}; jqXHR: ${jqXHR}`);
     const errorStatus = jqXHR.status;
     let errorMessage = " 503 - Service Unavailable"
     if (errorThrown == "timeout") {
         errorMessage = "Timeout error";
     } else if (errorStatus != 0) {
-        errorMessage = errorStatus + " - " + errorThrown
+        errorMessage = `${errorStatus} - ${errorThrown}`;
     }
     $("#error-detail").html(errorMessage);
     $("#error-alert").fadeIn(200);
@@ -93,10 +93,10 @@ $(document).ready(function () {
             }
         } else {
             if (!document.title.startsWith("* ")) {
-                document.title = "* " + document.title;
+                document.title = `* ${document.title}`;
             }
         }
-        console.log(`Text difference execution time: ${performance.now() - start} ms`, );
+        // console.log(`Text difference execution time: ${performance.now() - start} ms`, );
     });
     quill.root.setAttribute('spellcheck', false)
     const quillDOM = $(quillDOMId);
@@ -209,7 +209,6 @@ $(document).ready(function () {
     // Exit confirmation
     function exitConfirmation() {
         if (JSON.stringify(contentFromLastSave.ops) != JSON.stringify(quill.getContents().ops)) {
-            console.log("different yeah");
             return "You have unsaved changes. Do you really want to quit?"
         }
         return void(0);
