@@ -27,14 +27,30 @@ function onFileLoaded (e) {
     $(quillDOMId)[0].innerHTML = e.target.result;
 }
 
+let popUpCopiedInfoTimeout = null;
+function popUpCopiedInfo() {
+    if (popUpCopiedInfoTimeout) {
+        clearTimeout(popUpCopiedInfoTimeout);
+    }
+    $("#copied-text-alert").fadeIn(200);
+    popUpCopiedInfoTimeout = setTimeout(() => {
+        $("#copied-text-alert").fadeOut(200);
+    }, 2500);
+}
+
 function handleAjaxError(jqXHR, textStatus, errorThrown) {
     console.log("textStatus", textStatus, "; errorThrown: ", errorThrown, "; jqXHR: ", jqXHR);
     const errorStatus = jqXHR.status;
-    errorThrown = errorThrown == "timeout" ? "Timeout error" : errorStatus + " - " + errorThrown
-    $("#error-detail").html(errorThrown);
-    $(".disappearing-alert").removeClass("d-none");
+    let errorMessage = " 503 - Service Unavailable"
+    if (errorThrown == "timeout") {
+        errorMessage = "Timeout error";
+    } else if (errorStatus != 0) {
+        errorMessage = errorStatus + " - " + errorThrown
+    }
+    $("#error-detail").html(errorMessage);
+    $("#error-alert").fadeIn(200);
     setTimeout(() => {
-        $(".disappearing-alert").addClass("d-none");
+        $("#error-alert").fadeOut(200);
     }, 5000);
 }
 
@@ -162,9 +178,11 @@ $(document).ready(function () {
     // COPY BUTTONS
     $("#btn-copy-editor").click(function () {
         navigator.clipboard.writeText(quill.getText());
+        popUpCopiedInfo();
     });
     $("#btn-copy-postprocess-result").click(function () {
         navigator.clipboard.writeText(txtResult.val());
+        popUpCopiedInfo();
     });
 
     // DOWNLOAD & UPLOAD TOOLBAR BUTTONS

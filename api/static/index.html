@@ -21,11 +21,20 @@
     <body>
         <main role="main" class="container">
             <!-- Disappearing error alert -->
-            <div class="disappearing-alert d-none">
+            <div id="error-alert" class="disappearing-alert">
                 <div class="alert alert-danger alert-dismissible d-flex align-items-center" role="alert">
                     <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
                     <div>
                         Sorry, we are unable to process your request! <b><span id="error-detail">Unknown error</span></b>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Copied text info alert -->
+            <div id="copied-text-alert">
+                <div class="alert alert-info" role="alert">
+                    <div>
+                        Text copied to clipboard!
                     </div>
                 </div>
             </div>
