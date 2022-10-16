@@ -69,8 +69,23 @@ $(document).ready(function () {
             $("#btn-editor-upload").click();
         }
     });
+    quill.on("text-change", function(delta, oldDelta, source) {
+        const start = performance.now();
+        if (JSON.stringify(contentFromLastSave.ops) == JSON.stringify(quill.getContents().ops)) {
+            if (document.title.startsWith("* ")) {
+                document.title = document.title.slice(2);
+            }
+        } else {
+            if (!document.title.startsWith("* ")) {
+                document.title = "* " + document.title;
+            }
+        }
+        console.log(`Text difference execution time: ${performance.now() - start} ms`, );
+    });
     quill.root.setAttribute('spellcheck', false)
     const quillDOM = $(quillDOMId);
+
+    var contentFromLastSave = quill.getContents();
 
     const formConvert = $("#form_convert");
     const txtResult = $("#txt-result");
@@ -160,10 +175,26 @@ $(document).ready(function () {
     $("#btn-editor-download").click(function () {
         inputEditorDownload.attr("href", downloadDataPrefix + quillDOM[0].innerHTML);
         inputEditorDownload[0].click();
+
+        // For exit confirmation
+        contentFromLastSave = quill.getContents();
+        if (document.title.startsWith("* ")) {
+            document.title = document.title.slice(2);
+        }
     });
     $("#btn-editor-upload").click(function () {
         checkboxIsFormatted.prop("checked", true);
         inputEditorUpload.click();
     });
     inputEditorUpload.change(handleFileSelect);
+
+    // Exit confirmation
+    function exitConfirmation() {
+        if (JSON.stringify(contentFromLastSave.ops) != JSON.stringify(quill.getContents().ops)) {
+            console.log("different yeah");
+            return "You have unsaved changes. Do you really want to quit?"
+        }
+        return void(0);
+    }
+    window.onbeforeunload = exitConfirmation;
 });
