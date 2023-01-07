@@ -29,7 +29,7 @@ COLOR_TO_EL_NAME_MAPPING = {
     'blue': 'bl',
     'yellow': 'y',
     'green': 'g',
-    '#0c4201': 'dg',
+    'rgb(12, 66, 1)': 'dg',
     'pink': 'pk',
     'orange': 'o',
     'purple': 'pp'
