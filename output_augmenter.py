@@ -100,10 +100,11 @@ def format_text_in_html(text: str) -> str:
 
     return ''.join(lines)
 
-def postprocess_formatted_text(text: str, additional_separator: str = DEFAULT_ADDITIONAL_SEPARATOR, slide_header_tag: str = DEFAULT_SLIDE_HEADER_TAG) -> str:
+def postprocess_formatted_text(text: str, additional_separator: str = DEFAULT_ADDITIONAL_SEPARATOR, slide_header_tag: str = DEFAULT_SLIDE_HEADER_TAG, ci_tag: str = DEFAULT_CONGREGATION_INSTRUCTION_TAG) -> str:
     lines = _convert_format_from_html(text, slide_header_tag)
     
     current_formatted_slide_header = _format_text(DEFAULT_SLIDE_HEADER, slide_header_tag)
+    current_formatted_congregation_instruction = ""
     prev_line_is_separator = True
     current_line_is_header = False
     i = 0
@@ -119,13 +120,25 @@ def postprocess_formatted_text(text: str, additional_separator: str = DEFAULT_AD
             prev_line_is_separator = True
             continue
 
-        # set current active slide_header
+        # set current active congregation_instruction
+        current_line_is_congregation_instruction = lines[i].startswith(f'{{{ci_tag}}}')
+        if current_line_is_congregation_instruction:
+            current_formatted_congregation_instruction = lines[i]
+
+        # set current active slide_header, 
+        #     AND reset current congregation_instruction
         current_line_is_header = lines[i].startswith(f'{{{slide_header_tag}}}')
         if current_line_is_header:
             current_formatted_slide_header = lines[i]
+            current_formatted_congregation_instruction = ""
 
-        # insert slide_header to every slides
+        # insert slide_header & congregation_instruction to every slides
         if prev_line_is_separator:
+            # congregation_instruction is always under header, so we wrap with congregation_instruction first
+            if not current_line_is_header and not current_line_is_congregation_instruction:
+                if current_formatted_congregation_instruction != "":
+                    lines[i] = f'{current_formatted_congregation_instruction}\n{lines[i]}'
+
             if not current_line_is_header:
                 lines[i] = f'{current_formatted_slide_header}\n{lines[i]}'
             prev_line_is_separator = False
