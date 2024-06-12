@@ -25,13 +25,20 @@ DEFAULT_HTML_TAGS_MAPPING = {
 }
 COLOR_TO_EL_NAME_MAPPING = {
     'white': 'w',
+    'rgb(255, 42, 42)': 'lr', # light red
     'red': 'r',
+    'rgb(152, 145, 255)': 'lbl', # light blue
+    'rgb(82, 215, 255)': 'cy', # cyan
     'blue': 'bl',
     'yellow': 'y',
+    'rgb(43, 255, 0)': 'lgr', # light green
     'green': 'g',
-    'rgb(12, 66, 1)': 'dg',
+    'rgb(12, 66, 1)': 'dg', # dark green
+    'rgb(255, 22, 205)': 'lpk', # light pink
     'pink': 'pk',
+    'rgb(255, 187, 63)': 'lo', # light orange
     'orange': 'o',
+    'rgb(222, 141, 255)': 'lpp', # light purple
     'purple': 'pp'
 }
 COLOR_CSS_ATTR_NAME = 'color: '
